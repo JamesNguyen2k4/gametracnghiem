@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard - Kéo Co Trắc Nghiệm</title>
 
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -15,8 +13,14 @@
   />
 
   <link rel="stylesheet" href="style.css" />
+  
 </head>
 <body>
+    <div class="text-center mt-4">
+        <button id="logoutBtn" type="button" class="config-trigger-btn">
+          🚪 Đăng xuất
+        </button>
+      </div>
   <div id="dashboardApp" class="dashboard-shell">
     <div class="dashboard-screen">
       <div class="dashboard-hero text-center mb-12">
@@ -109,7 +113,11 @@
       </div>
     </div>
   </div>
-
+  <p>@Bản quyền thuộc Nguyễn Đăng Trường</p>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../shared/supabase.js"></script>
+  <script src="../shared/auth-guard.js"></script>
   <script src="script.js"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 </body>
 </html>

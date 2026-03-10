@@ -1,7 +1,7 @@
 let parsedQuiz = null;
 
-const SUPABASE_URL = "https://izjtgtgnyedmdzmljbte.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6anRndGdueWVkbWR6bWxqYnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTM2MjYsImV4cCI6MjA4ODcyOTYyNn0.b5JgqCSgXvrU8msDvvI85xvf8J5578Z981Bf_F43GiQ";
+//const SUPABASE_URL = "https://izjtgtgnyedmdzmljbte.supabase.co";
+//const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6anRndGdueWVkbWR6bWxqYnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTM2MjYsImV4cCI6MjA4ODcyOTYyNn0.b5JgqCSgXvrU8msDvvI85xvf8J5578Z981Bf_F43GiQ";
 
 const parseBtn = document.getElementById("parseBtn");
 const saveBtn = document.getElementById("saveBtn");
@@ -21,8 +21,8 @@ if (folderStatus) {
   folderStatus.textContent = "Đã chuyển sang lưu trực tiếp lên Supabase.";
 }
 
-parseBtn.addEventListener("click", handleParse);
-saveBtn.addEventListener("click", handleSave);
+parseBtn?.addEventListener("click", handleParse);
+saveBtn?.addEventListener("click", handleSave);
 
 document.addEventListener("DOMContentLoaded", () => {
   const backDashboardBtn = document.getElementById("backDashboardBtn");
@@ -37,6 +37,60 @@ document.addEventListener("DOMContentLoaded", () => {
 function setMessage(text, isError = false) {
   messageEl.textContent = text;
   messageEl.style.color = isError ? "#fca5a5" : "#fde68a";
+}
+
+async function requireAuth() {
+  if (!window.supabaseClient) {
+    throw new Error("Thiếu supabaseClient. Hãy nạp shared/supabase.js trước.");
+  }
+
+  const {
+    data: { session },
+    error
+  } = await window.supabaseClient.auth.getSession();
+
+  if (error) throw error;
+  if (!session?.user) {
+    window.location.href = "../login/index.html";
+    return null;
+  }
+
+  return session.user;
+}
+
+async function getAccessToken() {
+  const {
+    data: { session },
+    error
+  } = await window.supabaseClient.auth.getSession();
+
+  if (error) throw error;
+  if (!session?.access_token) {
+    throw new Error("Không tìm thấy phiên đăng nhập. Vui lòng đăng nhập lại.");
+  }
+
+  return session.access_token;
+}
+
+async function supabaseFetch(path, options = {}) {
+  const accessToken = await getAccessToken();
+
+  const response = await fetch(`${SUPABASE_URL}${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+
+  return response;
 }
 
 function slugify(name) {
@@ -137,36 +191,26 @@ function handleParse() {
   }
 }
 
-async function supabaseFetch(path, options = {}) {
-  const response = await fetch(`${SUPABASE_URL}${path}`, {
-    ...options,
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      ...(options.headers || {})
-    }
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `HTTP ${response.status}`);
-  }
-
-  return response;
+async function findExistingQuizBySlugAndUser(slug, userId) {
+  const res = await supabaseFetch(
+    `/rest/v1/quizzes?select=id,title,slug,description,user_id&slug=eq.${encodeURIComponent(slug)}&user_id=eq.${userId}&limit=1`
+  );
+  const data = await res.json();
+  return Array.isArray(data) && data.length > 0 ? data[0] : null;
 }
 
-async function upsertQuiz(meta) {
+async function createQuiz(meta, userId) {
   const payload = {
     title: meta.title,
     slug: meta.slug,
-    description: meta.description || ""
+    description: meta.description || "",
+    user_id: userId
   };
 
-  const res = await supabaseFetch("/rest/v1/quizzes?on_conflict=slug", {
+  const res = await supabaseFetch("/rest/v1/quizzes", {
     method: "POST",
     headers: {
-      Prefer: "resolution=merge-duplicates,return=representation"
+      Prefer: "return=representation"
     },
     body: JSON.stringify([payload])
   });
@@ -174,10 +218,45 @@ async function upsertQuiz(meta) {
   const data = await res.json();
 
   if (!Array.isArray(data) || !data[0]?.id) {
-    throw new Error("Không lấy được quiz id sau khi lưu bảng quizzes.");
+    throw new Error("Không lấy được quiz id sau khi tạo bộ câu hỏi.");
   }
 
   return data[0];
+}
+
+async function updateQuiz(quizId, meta, userId) {
+  const payload = {
+    title: meta.title,
+    slug: meta.slug,
+    description: meta.description || "",
+    user_id: userId
+  };
+
+  const res = await supabaseFetch(`/rest/v1/quizzes?id=eq.${quizId}&user_id=eq.${userId}`, {
+    method: "PATCH",
+    headers: {
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  if (!Array.isArray(data) || !data[0]?.id) {
+    throw new Error("Không cập nhật được bộ câu hỏi.");
+  }
+
+  return data[0];
+}
+
+async function upsertQuiz(meta, userId) {
+  const existing = await findExistingQuizBySlugAndUser(meta.slug, userId);
+
+  if (existing) {
+    return await updateQuiz(existing.id, meta, userId);
+  }
+
+  return await createQuiz(meta, userId);
 }
 
 async function deleteOldQuestionsByQuizId(quizId) {
@@ -209,13 +288,16 @@ async function insertQuestions(quiz, questions) {
 
 async function handleSave() {
   try {
+    const user = await requireAuth();
+    if (!user) return;
+
     if (!parsedQuiz) {
       parsedQuiz = buildQuizObject();
     }
 
     setMessage("Đang lưu bộ câu hỏi lên Supabase...");
 
-    const savedQuiz = await upsertQuiz(parsedQuiz.meta);
+    const savedQuiz = await upsertQuiz(parsedQuiz.meta, user.id);
 
     await deleteOldQuestionsByQuizId(savedQuiz.id);
     await insertQuestions(savedQuiz, parsedQuiz.questions);

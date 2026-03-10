@@ -101,13 +101,31 @@ const DEFAULT_GAME_CONFIG = {
     startGame();
   }
   
-  document.addEventListener("DOMContentLoaded", () => {
+  async function handleLogout() {
+    try {
+      if (!window.supabaseClient) {
+        throw new Error("Thiếu supabaseClient.");
+      }
+  
+      await window.supabaseClient.auth.signOut();
+      window.location.href = "../login/index.html";
+    } catch (error) {
+      console.error("logout error:", error);
+      alert("Đăng xuất thất bại. Vui lòng thử lại.");
+    }
+  }
+  
+  document.addEventListener("DOMContentLoaded", async () => {
+    const user = await requireAuthOrRedirect();
+    if (!user) return;
+  
     const startGameBtn = document.getElementById("startGameBtn");
     const goEditorBtn = document.getElementById("goEditorBtn");
     const openConfigBtn = document.getElementById("openConfigBtn");
     const closeConfigBtn = document.getElementById("closeConfigBtn");
     const configBackdrop = document.getElementById("configBackdrop");
     const saveConfigBtn = document.getElementById("saveConfigBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
   
     if (startGameBtn) {
       startGameBtn.addEventListener("click", startGame);
@@ -131,6 +149,10 @@ const DEFAULT_GAME_CONFIG = {
   
     if (saveConfigBtn) {
       saveConfigBtn.addEventListener("click", saveConfigAndStart);
+    }
+  
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", handleLogout);
     }
   
     document.addEventListener("keydown", (event) => {

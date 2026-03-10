@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng ký - Kéo Co Trắc Nghiệm</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="auth-card">
+      <div class="auth-glow auth-glow-left"></div>
+      <div class="auth-glow auth-glow-right"></div>
+
+      <div class="auth-header">
+        <div class="auth-badge">📝</div>
+        <h1>Đăng ký</h1>
+        <p>Tạo tài khoản để lưu bộ câu hỏi và quản lý dữ liệu riêng của bạn.</p>
+      </div>
+
+      <form class="auth-form" id="registerForm">
+        <div class="form-group">
+          <label for="displayName">Tên hiển thị</label>
+          <input
+            id="displayName"
+            name="displayName"
+            type="text"
+            placeholder="Nhập tên hiển thị"
+            autocomplete="nickname"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Nhập email của bạn"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mật khẩu</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Tạo mật khẩu"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Nhập lại mật khẩu</label>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            placeholder="Nhập lại mật khẩu"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <label class="checkbox-wrap">
+          <input id="agreeTerms" type="checkbox" />
+          <span>Tôi đồng ý với điều khoản sử dụng</span>
+        </label>
+
+        <p id="message" class="auth-message"></p>
+
+        <button id="registerBtn" type="submit" class="primary-btn">Tạo tài khoản</button>
+      </form>
+
+      <div class="auth-footer">
+        <span>Đã có tài khoản?</span>
+        <a href="../login/index.html">Đăng nhập</a>
+      </div>
+
+      <div class="back-wrap">
+        <a href="../dashboard/index.html" class="back-btn">← Về Dashboard</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../shared/supabase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

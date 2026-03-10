@@ -24,8 +24,8 @@ let teamBTimer = null;
 let teamATimeLeft = ANSWER_TIME;
 let teamBTimeLeft = ANSWER_TIME;
 
-const SUPABASE_URL = "https://izjtgtgnyedmdzmljbte.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6anRndGdueWVkbWR6bWxqYnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTM2MjYsImV4cCI6MjA4ODcyOTYyNn0.b5JgqCSgXvrU8msDvvI85xvf8J5578Z981Bf_F43GiQ";
+//const SUPABASE_URL = "https://izjtgtgnyedmdzmljbte.supabase.co";
+//const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6anRndGdueWVkbWR6bWxqYnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTM2MjYsImV4cCI6MjA4ODcyOTYyNn0.b5JgqCSgXvrU8msDvvI85xvf8J5578Z981Bf_F43GiQ";
 
 // Mapping phím cho 2 đội
 const KEY_BINDINGS = {
@@ -40,7 +40,6 @@ const KEY_BINDINGS = {
   l: { team: "B", answerIndex: 3 }
 };
 
-// Hiển thị hint phím trên nút đáp án
 const TEAM_KEYS = {
   A: ["A", "S", "D", "F"],
   B: ["H", "J", "K", "L"]
@@ -60,15 +59,68 @@ let gameEnded = false;
 let teamAAnswered = false;
 let teamBAnswered = false;
 
-const defaultConfig = {
-  team_a_name: "ĐỘI XANH",
-  team_b_name: "ĐỘI ĐỎ",
-  game_title: "🎯 KÉO CO TRẮC NGHIỆM 🎯"
-};
+// ========================================
+// AUTH + API
+// ========================================
+async function requireAuth() {
+  if (!window.supabaseClient) {
+    throw new Error("Thiếu supabaseClient. Hãy nạp shared/supabase.js trước.");
+  }
 
-// ========================================
-// SDK DỰ PHÒNG
-// ========================================
+  const {
+    data: { session },
+    error
+  } = await window.supabaseClient.auth.getSession();
+
+  if (error) throw error;
+
+  if (!session?.user) {
+    window.location.href = "../login/index.html";
+    return null;
+  }
+
+  return session.user;
+}
+
+async function getAccessToken() {
+  const {
+    data: { session },
+    error
+  } = await window.supabaseClient.auth.getSession();
+
+  if (error) throw error;
+
+  if (!session?.access_token) {
+    throw new Error("Không tìm thấy phiên đăng nhập. Vui lòng đăng nhập lại.");
+  }
+
+  return session.access_token;
+}
+
+async function supabaseFetch(path, options = {}) {
+  const accessToken = await getAccessToken();
+
+  const response = await fetch(`${SUPABASE_URL}${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+
+  return response;
+}
+
+async function initSDK() {
+  return;
+}
 function getTimerByTeam(team) {
   return team === "A" ? teamATimer : teamBTimer;
 }
@@ -146,28 +198,6 @@ function startQuestionTimer(team) {
 
   setTimerByTeam(team, timer);
 }
-async function initSDK() {
-  return;
-}
-
-async function supabaseFetch(path, options = {}) {
-  const response = await fetch(`${SUPABASE_URL}${path}`, {
-    ...options,
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      ...(options.headers || {})
-    }
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `HTTP ${response.status}`);
-  }
-
-  return response;
-}
 
 // ========================================
 // LOAD DANH SÁCH BỘ CÂU HỎI
@@ -177,15 +207,18 @@ async function loadQuizManifest() {
   if (!select) return;
 
   try {
+    const user = await requireAuth();
+    if (!user) return;
+
     const res = await supabaseFetch(
-      "/rest/v1/quizzes?select=id,title,slug,description&order=id.asc"
+      `/rest/v1/quizzes?select=id,title,slug,description,user_id&user_id=eq.${user.id}&order=id.asc`
     );
 
     const quizzes = await res.json();
     select.innerHTML = "";
 
     if (!Array.isArray(quizzes) || quizzes.length === 0) {
-      select.innerHTML = '<option value="">Chưa có bộ câu hỏi nào</option>';
+      select.innerHTML = '<option value="">Bạn chưa có bộ câu hỏi nào</option>';
       return;
     }
 
@@ -232,8 +265,20 @@ async function loadSelectedQuiz() {
   if (!quizId) return;
 
   try {
+    const user = await requireAuth();
+    if (!user) return;
+
     const selectedOption = select.options[select.selectedIndex];
     const quizTitle = selectedOption?.textContent || "Bộ câu hỏi";
+
+    const quizCheckRes = await supabaseFetch(
+      `/rest/v1/quizzes?select=id,user_id,title&user_id=eq.${user.id}&id=eq.${quizId}&limit=1`
+    );
+    const quizCheckData = await quizCheckRes.json();
+
+    if (!Array.isArray(quizCheckData) || quizCheckData.length === 0) {
+      throw new Error("Bạn không có quyền truy cập bộ câu hỏi này.");
+    }
 
     const res = await supabaseFetch(
       `/rest/v1/questions_list?select=id,question,option_a,option_b,option_c,option_d,correct_index,quiz_id&quiz_id=eq.${quizId}&order=id.asc`
@@ -587,12 +632,6 @@ function updateTugOfWar() {
     }
   }
 
-  const progressFill = document.getElementById("pullProgressFill");
-  if (progressFill) {
-    const percent = Math.min((absDiff / WIN_THRESHOLD) * 100, 100);
-    progressFill.style.width = `${percent}%`;
-  }
-
   const offset = (teamBScore - teamAScore) * 12;
 
   document.getElementById("teamAPeople").style.transform =
@@ -686,6 +725,15 @@ function setupKeyboardControls() {
 // INIT
 // ========================================
 document.addEventListener("DOMContentLoaded", async () => {
+  const backDashboardBtn = document.getElementById("backDashboardBtn");
+  if (backDashboardBtn) {
+    backDashboardBtn.addEventListener("click", () => {
+      window.location.href = "../dashboard/index.html";
+    });
+  }
+
+  console.log("back button listener attached");
+
   await initSDK();
 
   const resetBtn = document.getElementById("resetBtn");
@@ -693,33 +741,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   const winnerResetBtn = document.getElementById("winnerResetBtn");
   const teamANameEl = document.getElementById("teamAName");
   const teamBNameEl = document.getElementById("teamBName");
-  
+
   if (teamANameEl) {
     teamANameEl.querySelector("span:last-child").textContent = TEAM_A_NAME;
   }
-  
+
   if (teamBNameEl) {
     teamBNameEl.querySelector("span:last-child").textContent = TEAM_B_NAME;
   }
+
   if (resetBtn) {
     resetBtn.addEventListener("click", resetGame);
   }
+
   if (winnerResetBtn) {
     winnerResetBtn.addEventListener("click", resetGame);
   }
+
   if (loadQuizBtn) {
     loadQuizBtn.addEventListener("click", loadSelectedQuiz);
   }
 
   setupKeyboardControls();
   await loadQuizManifest();
-
-  const backDashboardBtn = document.getElementById("backDashboardBtn");
-  if (backDashboardBtn) {
-    backDashboardBtn.addEventListener("click", () => {
-      window.location.href = "../dashboard/index.html";
-    });
-  }
 
   const quizSelect = document.getElementById("quizSelect");
   if (quizSelect && quizSelect.value) {

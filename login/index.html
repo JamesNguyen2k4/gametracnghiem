@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập - Kéo Co Trắc Nghiệm</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="auth-card">
+      <div class="auth-glow auth-glow-left"></div>
+      <div class="auth-glow auth-glow-right"></div>
+
+      <div class="auth-header">
+        <div class="auth-badge">🎯</div>
+        <h1>Đăng nhập</h1>
+        <p>Vào hệ thống để quản lý bộ câu hỏi và bắt đầu trò chơi.</p>
+      </div>
+
+      <form class="auth-form" id="loginForm">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Nhập email của bạn"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mật khẩu</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Nhập mật khẩu"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox-wrap">
+            <input type="checkbox" />
+            <span>Ghi nhớ đăng nhập</span>
+          </label>
+
+          <a href="#" class="text-link">Quên mật khẩu?</a>
+        </div>
+
+        <p id="message" class="auth-message"></p>
+
+        <button id="loginBtn" type="submit" class="primary-btn">Đăng nhập</button>
+      </form>
+
+      <div class="auth-footer">
+        <span>Chưa có tài khoản?</span>
+        <a href="../register/index.html">Đăng ký ngay</a>
+      </div>
+
+      
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../shared/supabase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
