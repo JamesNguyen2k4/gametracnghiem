@@ -1,0 +1,220 @@
+* {
+    font-family: 'Baloo 2', cursive;
+    box-sizing: border-box;
+  }
+  
+  html,
+  body {
+    height: 100%;
+  }
+  
+  /* ===== LAYOUT ===== */
+  .main-layout {
+    height: calc(100% - 140px);
+  }
+  
+  /* ===== ANIMATION KÉO CO ===== */
+  @keyframes pull-left {
+    0%,
+    100% {
+      transform: translateX(0) rotate(-5deg);
+    }
+    50% {
+      transform: translateX(-8px) rotate(-8deg);
+    }
+  }
+  
+  @keyframes pull-right {
+    0%,
+    100% {
+      transform: translateX(0) rotate(5deg);
+    }
+    50% {
+      transform: translateX(8px) rotate(8deg);
+    }
+  }
+  
+  @keyframes rope-wave {
+    0%,
+    100% {
+      transform: scaleY(1);
+    }
+    50% {
+      transform: scaleY(1.05);
+    }
+  }
+  
+  .team-a-pulling {
+    animation: pull-left 0.3s ease-in-out 3;
+  }
+  
+  .team-b-pulling {
+    animation: pull-right 0.3s ease-in-out 3;
+  }
+  
+  .rope-pulling {
+    animation: rope-wave 0.2s ease-in-out 4;
+  }
+  
+  /* ===== HIỆU ỨNG NÚT ===== */
+  .answer-btn {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .answer-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+  
+  .answer-btn:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  .answer-btn.correct {
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+    animation: correctPulse 0.5s ease;
+  }
+  
+  .answer-btn.wrong {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    animation: wrongShake 0.5s ease;
+  }
+  
+  @keyframes correctPulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+  
+  @keyframes wrongShake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-10px);
+    }
+    75% {
+      transform: translateX(10px);
+    }
+  }
+  
+  /* ===== NHÂN VẬT ===== */
+  .person {
+    transition: transform 0.3s ease;
+  }
+  
+  /* ===== POPUP ===== */
+  @keyframes popIn {
+    0% {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .winner-popup {
+    animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  @keyframes confetti {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100px) rotate(720deg);
+      opacity: 0;
+    }
+  }
+  
+  .confetti-piece {
+    animation: confetti 1.5s ease-out infinite;
+  }
+  
+  /* ===== SỢI DÂY ===== */
+  .rope-section {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1200px) {
+    .game-title {
+      font-size: 1.5rem !important;
+    }
+  
+    .team-title {
+      font-size: 1.25rem !important;
+    }
+  
+    .question-text {
+      font-size: 1rem !important;
+    }
+  
+    .answer-btn {
+      font-size: 0.875rem !important;
+      padding: 0.5rem !important;
+    }
+  }
+  .quiz-picker-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  
+  .quiz-picker-label {
+    color: white;
+    font-weight: 700;
+  }
+  
+  .quiz-picker-select {
+    min-width: 260px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 0;
+    font-size: 15px;
+  }
+  
+  .quiz-picker-btn {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 0;
+    background: #f59e0b;
+    color: #1f2937;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .top-actions {
+    display: flex;
+    justify-content: flex-start;
+    padding: 12px 16px 0;
+  }
+  
+  .back-btn {
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    background: #e5e7eb;
+    color: #1f2937;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  
+  .back-btn:hover {
+    filter: brightness(0.96);
+  }

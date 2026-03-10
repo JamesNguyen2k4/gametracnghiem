@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản trị câu hỏi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Quản trị câu hỏi</h1>
+      <p>Nhập nội dung TXT, chuẩn hóa thành JSON và lưu vào thư mục <b>question/</b>.</p>
+    </header>
+    <div class="top-actions">
+        <button id="backDashboardBtn" type="button" class="back-btn">
+          ← Về Dashboard
+        </button>
+      </div>
+    <main class="layout">
+      <section class="card">
+        <h2>1. Chọn thư mục question</h2>
+        <button id="pickFolderBtn">Chọn thư mục question</button>
+        <p id="folderStatus" class="muted">Chưa chọn thư mục.</p>
+      </section>
+
+      <section class="card">
+        <h2>2. Thông tin bộ câu hỏi</h2>
+        <label>Tên bộ câu hỏi</label>
+        <input id="quizTitle" type="text" placeholder="Ví dụ: bo-cau-hoi-lop-10a1" />
+
+        <label>Tên file JSON</label>
+        <input id="quizFileName" type="text" placeholder="Ví dụ: lop-10a1.json" />
+
+        <label>Mô tả</label>
+        <input id="quizDescription" type="text" placeholder="Ví dụ: Bộ câu hỏi kiểm tra nhanh lớp 10A1" />
+      </section>
+
+      <section class="card full">
+        <h2>3. Dán nội dung TXT</h2>
+        <textarea id="rawInput" rows="18" placeholder="Dán nội dung câu hỏi vào đây..."></textarea>
+
+        <div class="actions">
+          <button id="parseBtn">Chuẩn hóa</button>
+          <button id="saveBtn">Lưu thành JSON mới</button>
+          <button id="downloadBtn">Tải JSON xuống</button>
+        </div>
+
+        <p id="message" class="message"></p>
+      </section>
+
+      <section class="card full">
+        <h2>4. Xem trước JSON</h2>
+        <pre id="preview"></pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

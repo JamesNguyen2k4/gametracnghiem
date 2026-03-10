@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Kéo Co Trắc Nghiệm</title>
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="dashboardApp" class="dashboard-shell">
+    <div class="dashboard-screen">
+      <div class="dashboard-hero text-center mb-12">
+        <h1 class="dashboard-title">
+          🎯 KÉO CO TRẮC NGHIỆM
+        </h1>
+        <p class="dashboard-subtitle">
+          Trả lời đúng để kéo đội bạn về phía chiến thắng!
+        </p>
+      </div>
+
+      <div class="dashboard-grid">
+        <button id="startGameBtn" class="dashboard-card dashboard-card-blue" type="button">
+          <div class="dashboard-card-shine"></div>
+          <div class="dashboard-card-content">
+            <div class="dashboard-icon">▶️</div>
+            <h2 class="dashboard-card-title">Chơi Game</h2>
+            <p class="dashboard-card-desc">
+              Bắt đầu trò chơi kéo co với câu hỏi có sẵn
+            </p>
+          </div>
+        </button>
+
+        <button id="goEditorBtn" class="dashboard-card dashboard-card-purple" type="button">
+          <div class="dashboard-card-shine"></div>
+          <div class="dashboard-card-content">
+            <div class="dashboard-icon">✏️</div>
+            <h2 class="dashboard-card-title">Soạn Câu Hỏi</h2>
+            <p class="dashboard-card-desc">
+              Tạo và chỉnh sửa câu hỏi cho trò chơi
+            </p>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
