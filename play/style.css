@@ -218,3 +218,35 @@
   .back-btn:hover {
     filter: brightness(0.96);
   }
+  .pull-info-simple {
+    margin-top: 14px;
+    text-align: center;
+  }
+  
+  .pull-info-line {
+    margin: 0;
+    color: #fff;
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 1.4;
+  }
+  
+  .pull-info-line + .pull-info-line {
+    margin-top: 6px;
+  }
+  
+  .pull-info-value {
+    color: #facc15;
+    font-size: 24px;
+    font-weight: 800;
+  }
+  
+  .pull-info-sub {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  
+  .pull-info-sub strong {
+    color: #facc15;
+  }

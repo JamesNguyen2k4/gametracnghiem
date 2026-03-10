@@ -1,7 +1,28 @@
 // ========================================
 // CẤU HÌNH TRÒ CHƠI
 // ========================================
-const WIN_THRESHOLD = 4;
+const DEFAULT_ANSWER_TIME = 15;
+const DEFAULT_WIN_THRESHOLD = 4;
+
+const pageParams = new URLSearchParams(window.location.search);
+
+const TEAM_A_NAME = pageParams.get("teamAName") || "ĐỘI XANH";
+const TEAM_B_NAME = pageParams.get("teamBName") || "ĐỘI ĐỎ";
+
+const ANSWER_TIME = Math.min(
+  120,
+  Math.max(5, Number(pageParams.get("answerTime")) || DEFAULT_ANSWER_TIME)
+);
+
+const WIN_THRESHOLD = Math.min(
+  20,
+  Math.max(1, Number(pageParams.get("winThreshold")) || DEFAULT_WIN_THRESHOLD)
+);
+
+let teamATimer = null;
+let teamBTimer = null;
+let teamATimeLeft = ANSWER_TIME;
+let teamBTimeLeft = ANSWER_TIME;
 
 const SUPABASE_URL = "https://izjtgtgnyedmdzmljbte.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6anRndGdueWVkbWR6bWxqYnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTM2MjYsImV4cCI6MjA4ODcyOTYyNn0.b5JgqCSgXvrU8msDvvI85xvf8J5578Z981Bf_F43GiQ";
@@ -48,6 +69,83 @@ const defaultConfig = {
 // ========================================
 // SDK DỰ PHÒNG
 // ========================================
+function getTimerByTeam(team) {
+  return team === "A" ? teamATimer : teamBTimer;
+}
+
+function setTimerByTeam(team, timer) {
+  if (team === "A") {
+    teamATimer = timer;
+  } else {
+    teamBTimer = timer;
+  }
+}
+
+function setTimeLeftByTeam(team, value) {
+  if (team === "A") {
+    teamATimeLeft = value;
+  } else {
+    teamBTimeLeft = value;
+  }
+}
+
+function getTimeLeftByTeam(team) {
+  return team === "A" ? teamATimeLeft : teamBTimeLeft;
+}
+
+function clearTeamTimer(team) {
+  const timer = getTimerByTeam(team);
+  if (timer) {
+    clearInterval(timer);
+    setTimerByTeam(team, null);
+  }
+}
+
+function updateTimerUI(team) {
+  const progressEl = document.getElementById(`team${team}Progress`);
+  const questions = getQuestionsByTeam(team);
+  const index = getCurrentQuestionIndex(team);
+
+  if (!progressEl) return;
+
+  if (!questions.length) {
+    progressEl.textContent = "Câu: 0/0";
+    return;
+  }
+
+  const displayIndex = Math.min(index + 1, questions.length);
+  progressEl.textContent = `Câu: ${displayIndex}/${questions.length} • ${getTimeLeftByTeam(team)}s`;
+}
+
+function startQuestionTimer(team) {
+  clearTeamTimer(team);
+  setTimeLeftByTeam(team, ANSWER_TIME);
+  updateTimerUI(team);
+
+  const timer = setInterval(() => {
+    if (gameEnded || isTeamAnswered(team)) {
+      clearTeamTimer(team);
+      return;
+    }
+
+    const nextValue = getTimeLeftByTeam(team) - 1;
+    setTimeLeftByTeam(team, nextValue);
+    updateTimerUI(team);
+
+    if (nextValue <= 0) {
+      clearTeamTimer(team);
+      setAnsweredState(team, true);
+      showTeamStatus(team, false);
+
+      setTimeout(() => {
+        advanceQuestion(team);
+        renderQuestion(team);
+      }, 1000);
+    }
+  }, 1000);
+
+  setTimerByTeam(team, timer);
+}
 async function initSDK() {
   return;
 }
@@ -280,7 +378,8 @@ function renderQuestion(team) {
 
   const q = questions[index];
   questionEl.textContent = q.question;
-  progressEl.textContent = `Câu: ${index + 1}/${questions.length}`;
+  setTimeLeftByTeam(team, ANSWER_TIME);
+  updateTimerUI(team);
 
   const labels = ["A", "B", "C", "D"];
   const colors =
@@ -324,6 +423,7 @@ function renderQuestion(team) {
       submitAnswer(team, selectedIndex, "pointer");
     });
   });
+  startQuestionTimer(team);
 }
 
 // ========================================
@@ -373,7 +473,7 @@ function submitAnswer(team, selectedIndex, source = "unknown") {
   if (selectedIndex < 0 || selectedIndex > 3) return;
 
   setAnsweredState(team, true);
-
+  clearTeamTimer(team);
   const isCorrect = selectedIndex === q.correctIndex;
 
   updateAnswerUI(team, selectedIndex, q.correctIndex, isCorrect);
@@ -469,11 +569,29 @@ function triggerPullAnimation(winningTeam) {
 // ========================================
 function updateTugOfWar() {
   const scoreDiff = teamAScore - teamBScore;
+  const absDiff = Math.abs(scoreDiff);
 
   document.getElementById("teamAScoreDisplay").textContent = teamAScore;
   document.getElementById("teamBScoreDisplay").textContent = teamBScore;
-  document.getElementById("scoreDiff").textContent = Math.abs(scoreDiff);
-  document.getElementById("pullForce").textContent = Math.abs(scoreDiff);
+  document.getElementById("scoreDiff").textContent = absDiff;
+  document.getElementById("pullForce").textContent = absDiff;
+
+  const remainingToWin = Math.max(WIN_THRESHOLD - absDiff, 0);
+  const winProgressText = document.getElementById("winProgressText");
+
+  if (winProgressText) {
+    if (remainingToWin === 0) {
+      winProgressText.innerHTML = `Đã đạt mức chênh lệch <strong>${WIN_THRESHOLD}</strong> để thắng`;
+    } else {
+      winProgressText.innerHTML = `Cần đạt <strong>${WIN_THRESHOLD}</strong> điểm chênh lệch để thắng`;
+    }
+  }
+
+  const progressFill = document.getElementById("pullProgressFill");
+  if (progressFill) {
+    const percent = Math.min((absDiff / WIN_THRESHOLD) * 100, 100);
+    progressFill.style.width = `${percent}%`;
+  }
 
   const offset = (teamBScore - teamAScore) * 12;
 
@@ -497,7 +615,7 @@ function showWinner(team) {
   const title = document.getElementById("winnerTitle");
 
   const teamName =
-    team === "A" ? defaultConfig.team_a_name : defaultConfig.team_b_name;
+    team === "A" ? TEAM_A_NAME : TEAM_B_NAME;
 
   title.textContent = teamName;
   title.style.color = team === "A" ? "#3b82f6" : "#ef4444";
@@ -530,7 +648,10 @@ function resetGame() {
   gameEnded = false;
   teamAAnswered = false;
   teamBAnswered = false;
-
+  clearTeamTimer("A");
+  clearTeamTimer("B");
+  setTimeLeftByTeam("A", ANSWER_TIME);
+  setTimeLeftByTeam("B", ANSWER_TIME);
   const overlay = document.getElementById("winnerOverlay");
   if (overlay) {
     overlay.classList.add("hidden");
@@ -570,7 +691,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const resetBtn = document.getElementById("resetBtn");
   const loadQuizBtn = document.getElementById("loadQuizBtn");
   const winnerResetBtn = document.getElementById("winnerResetBtn");
-
+  const teamANameEl = document.getElementById("teamAName");
+  const teamBNameEl = document.getElementById("teamBName");
+  
+  if (teamANameEl) {
+    teamANameEl.querySelector("span:last-child").textContent = TEAM_A_NAME;
+  }
+  
+  if (teamBNameEl) {
+    teamBNameEl.querySelector("span:last-child").textContent = TEAM_B_NAME;
+  }
   if (resetBtn) {
     resetBtn.addEventListener("click", resetGame);
   }
