@@ -4,20 +4,19 @@ let parsedQuiz = null;
 const pickFolderBtn = document.getElementById("pickFolderBtn");
 const parseBtn = document.getElementById("parseBtn");
 const saveBtn = document.getElementById("saveBtn");
-const downloadBtn = document.getElementById("downloadBtn");
+
 
 const folderStatus = document.getElementById("folderStatus");
 const quizTitleEl = document.getElementById("quizTitle");
-const quizFileNameEl = document.getElementById("quizFileName");
+
 const quizDescriptionEl = document.getElementById("quizDescription");
 const rawInputEl = document.getElementById("rawInput");
-const previewEl = document.getElementById("preview");
 const messageEl = document.getElementById("message");
 
 pickFolderBtn.addEventListener("click", pickQuestionFolder);
 parseBtn.addEventListener("click", handleParse);
 saveBtn.addEventListener("click", handleSave);
-downloadBtn.addEventListener("click", handleDownload);
+
 
 function setMessage(text, isError = false) {
   messageEl.textContent = text;
@@ -48,17 +47,34 @@ async function pickQuestionFolder() {
 }
 
 function normalizeFileName(name) {
-  let value = name.trim().toLowerCase();
-
-  value = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  value = value.replace(/đ/g, "d");
-  value = value.replace(/[^a-z0-9\-_\s]/g, "");
-  value = value.replace(/\s+/g, "-");
-  value = value.replace(/-+/g, "-");
-
-  if (!value.endsWith(".json")) value += ".json";
-  return value;
-}
+    let value = name.trim().toLowerCase();
+  
+    // bỏ dấu tiếng Việt
+    value = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    value = value.replace(/đ/g, "d").replace(/Đ/g, "d");
+  
+    // bỏ ký tự đặc biệt, chỉ giữ chữ, số, khoảng trắng, gạch ngang, gạch dưới
+    value = value.replace(/[^a-z0-9\s\-_]/g, "");
+  
+    // thay khoảng trắng bằng dấu -
+    value = value.replace(/\s+/g, "-");
+  
+    // gộp nhiều dấu - liên tiếp
+    value = value.replace(/-+/g, "-");
+  
+    // bỏ dấu - ở đầu/cuối
+    value = value.replace(/^-+|-+$/g, "");
+  
+    if (!value) {
+      value = "bo-cau-hoi";
+    }
+  
+    if (!value.endsWith(".json")) {
+      value += ".json";
+    }
+  
+    return value;
+  }
 
 function parseQuestionsFromText(rawText) {
   const blocks = rawText
@@ -106,34 +122,31 @@ function parseQuestionsFromText(rawText) {
 }
 
 function buildQuizObject() {
-  const title = quizTitleEl.value.trim();
-  const fileNameInput = quizFileNameEl.value.trim();
-  const description = quizDescriptionEl.value.trim();
-  const rawText = rawInputEl.value.trim();
-
-  if (!title) throw new Error("Bạn chưa nhập tên bộ câu hỏi.");
-  if (!fileNameInput) throw new Error("Bạn chưa nhập tên file JSON.");
-  if (!rawText) throw new Error("Bạn chưa dán nội dung câu hỏi.");
-
-  const fileName = normalizeFileName(fileNameInput);
-  const questions = parseQuestionsFromText(rawText);
-
-  return {
-    meta: {
-      title,
-      fileName,
-      description,
-      totalQuestions: questions.length,
-      createdAt: new Date().toISOString()
-    },
-    questions
-  };
-}
+    const title = quizTitleEl?.value.trim() || "";
+    const description = quizDescriptionEl?.value.trim() || "";
+    const rawText = rawInputEl?.value.trim() || "";
+  
+    if (!title) throw new Error("Bạn chưa nhập tên bộ câu hỏi.");
+    if (!rawText) throw new Error("Bạn chưa dán nội dung câu hỏi.");
+  
+    const fileName = normalizeFileName(title);
+    const questions = parseQuestionsFromText(rawText);
+  
+    return {
+      meta: {
+        title,
+        fileName,
+        description,
+        totalQuestions: questions.length,
+        createdAt: new Date().toISOString()
+      },
+      questions
+    };
+  }
 
 function handleParse() {
   try {
     parsedQuiz = buildQuizObject();
-    previewEl.textContent = JSON.stringify(parsedQuiz, null, 2);
     setMessage(`Đã chuẩn hóa thành công ${parsedQuiz.questions.length} câu hỏi.`);
   } catch (error) {
     parsedQuiz = null;
@@ -151,7 +164,6 @@ async function handleSave() {
 
     if (!parsedQuiz) {
       parsedQuiz = buildQuizObject();
-      previewEl.textContent = JSON.stringify(parsedQuiz, null, 2);
     }
 
     const jsonText = JSON.stringify(parsedQuiz, null, 2);
@@ -210,26 +222,3 @@ async function updateManifest(meta) {
   }
 }
 
-function handleDownload() {
-  try {
-    if (!parsedQuiz) {
-      parsedQuiz = buildQuizObject();
-      previewEl.textContent = JSON.stringify(parsedQuiz, null, 2);
-    }
-
-    const blob = new Blob([JSON.stringify(parsedQuiz, null, 2)], {
-      type: "application/json"
-    });
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = parsedQuiz.meta.fileName;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    setMessage(`Đã tải xuống ${parsedQuiz.meta.fileName}`);
-  } catch (error) {
-    setMessage(error.message, true);
-  }
-}

@@ -1,0 +1,231 @@
+{
+  "meta": {
+    "title": "bai1",
+    "fileName": "bai1.json",
+    "description": "",
+    "totalQuestions": 20,
+    "createdAt": "2026-03-10T15:18:04.387Z"
+  },
+  "questions": [
+    {
+      "id": 1,
+      "question": "Quốc gia nào có diện tích lớn nhất thế giới?",
+      "options": [
+        "Trung Quốc",
+        "Mỹ",
+        "Nga",
+        "Canada"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 2,
+      "question": "Hành tinh nào được gọi là \"Hành tinh đỏ\"?",
+      "options": [
+        "Sao Kim",
+        "Sao Hỏa",
+        "Sao Thủy",
+        "Sao Mộc"
+      ],
+      "correctIndex": 1
+    },
+    {
+      "id": 3,
+      "question": "Đơn vị đo chiều dài trong hệ SI là gì?",
+      "options": [
+        "cm",
+        "met (m)",
+        "inch",
+        "yard"
+      ],
+      "correctIndex": 1
+    },
+    {
+      "id": 4,
+      "question": "Ai là người phát minh ra bóng đèn điện?",
+      "options": [
+        "Newton",
+        "Edison",
+        "Thomas Edison",
+        "Einstein"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 5,
+      "question": "Biển nào lớn nhất thế giới?",
+      "options": [
+        "Biển Đông",
+        "Biển Đỏ",
+        "Biển Baltic",
+        "Biển Philippines"
+      ],
+      "correctIndex": 3
+    },
+    {
+      "id": 6,
+      "question": "Ngôn ngữ nào được sử dụng nhiều nhất thế giới?",
+      "options": [
+        "Tiếng Anh",
+        "Tiếng Tây Ban Nha",
+        "Tiếng Trung",
+        "Tiếng Pháp"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 7,
+      "question": "Kim loại nào dẫn điện tốt nhất?",
+      "options": [
+        "Nhôm",
+        "Sắt",
+        "Bạc",
+        "Vàng"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 8,
+      "question": "Động vật nào là loài lớn nhất trên Trái Đất?",
+      "options": [
+        "Cá mập trắng",
+        "Voi châu Phi",
+        "Cá voi xanh",
+        "Hà mã"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 9,
+      "question": "Ngọn núi cao nhất thế giới là gì?",
+      "options": [
+        "K2",
+        "Phú Sĩ",
+        "Fansipan",
+        "Everest"
+      ],
+      "correctIndex": 3
+    },
+    {
+      "id": 10,
+      "question": "Nước nào có dân số đông nhất thế giới?",
+      "options": [
+        "Ấn Độ",
+        "Trung Quốc",
+        "Mỹ",
+        "Indonesia"
+      ],
+      "correctIndex": 1
+    },
+    {
+      "id": 11,
+      "question": "Trái tim con người có bao nhiêu ngăn?",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 12,
+      "question": "Châu lục nào có diện tích lớn nhất?",
+      "options": [
+        "Châu Phi",
+        "Châu Âu",
+        "Châu Á",
+        "Châu Mỹ"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 13,
+      "question": "Động vật nào được gọi là \"Vua của muôn loài\"?",
+      "options": [
+        "Hổ",
+        "Báo",
+        "Sư tử",
+        "Chó sói"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 14,
+      "question": "Ai là người đầu tiên đặt chân lên Mặt Trăng?",
+      "options": [
+        "Yuri Gagarin",
+        "Buzz Aldrin",
+        "Neil Armstrong",
+        "John Glenn"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 15,
+      "question": "Sông dài nhất thế giới là sông nào?",
+      "options": [
+        "Sông Amazon",
+        "Sông Nile",
+        "Sông Dương Tử",
+        "Sông Mississippi"
+      ],
+      "correctIndex": 1
+    },
+    {
+      "id": 16,
+      "question": "Nước nào có tháp Eiffel?",
+      "options": [
+        "Ý",
+        "Anh",
+        "Tây Ban Nha",
+        "Pháp"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 17,
+      "question": "Thủ đô của Nhật Bản là gì?",
+      "options": [
+        "Osaka",
+        "Kyoto",
+        "Nagoya",
+        "Tokyo"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 18,
+      "question": "Nguyên tố hóa học có ký hiệu O là gì?",
+      "options": [
+        "Hydro",
+        "Nitơ",
+        "Oxi",
+        "Cacbon"
+      ],
+      "correctIndex": 2
+    },
+    {
+      "id": 19,
+      "question": "Loài chim nào có thể bắt chước tiếng người?",
+      "options": [
+        "Chim sẻ",
+        "Vẹt",
+        "Đại bàng",
+        "Chim én"
+      ],
+      "correctIndex": 1
+    },
+    {
+      "id": 20,
+      "question": "Sa mạc lớn nhất thế giới là gì?",
+      "options": [
+        "Sahara",
+        "Gobi",
+        "Kalahari",
+        "Nam Cực"
+      ],
+      "correctIndex": 2
+    }
+  ]
+}

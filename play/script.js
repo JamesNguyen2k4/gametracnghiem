@@ -543,7 +543,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (resetBtn) {
     resetBtn.addEventListener("click", resetGame);
   }
-
+  if (winnerResetBtn) {
+    winnerResetBtn.addEventListener("click", resetGame);
+  }
   if (loadQuizBtn) {
     loadQuizBtn.addEventListener("click", loadSelectedQuiz);
   }
