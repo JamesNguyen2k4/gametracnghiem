@@ -1,90 +1,73 @@
-let questionFolderHandle = null;
 let parsedQuiz = null;
 
-const pickFolderBtn = document.getElementById("pickFolderBtn");
+const SUPABASE_URL = "https://izjtgtgnyedmdzmljbte.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6anRndGdueWVkbWR6bWxqYnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTM2MjYsImV4cCI6MjA4ODcyOTYyNn0.b5JgqCSgXvrU8msDvvI85xvf8J5578Z981Bf_F43GiQ";
+
 const parseBtn = document.getElementById("parseBtn");
 const saveBtn = document.getElementById("saveBtn");
 
-
-const folderStatus = document.getElementById("folderStatus");
 const quizTitleEl = document.getElementById("quizTitle");
-
 const quizDescriptionEl = document.getElementById("quizDescription");
 const rawInputEl = document.getElementById("rawInput");
 const messageEl = document.getElementById("message");
 
-pickFolderBtn.addEventListener("click", pickQuestionFolder);
+const pickFolderBtn = document.getElementById("pickFolderBtn");
+const folderStatus = document.getElementById("folderStatus");
+
+if (pickFolderBtn) {
+  pickFolderBtn.style.display = "none";
+}
+if (folderStatus) {
+  folderStatus.textContent = "Đã chuyển sang lưu trực tiếp lên Supabase.";
+}
+
 parseBtn.addEventListener("click", handleParse);
 saveBtn.addEventListener("click", handleSave);
 
+document.addEventListener("DOMContentLoaded", () => {
+  const backDashboardBtn = document.getElementById("backDashboardBtn");
+
+  if (backDashboardBtn) {
+    backDashboardBtn.addEventListener("click", () => {
+      window.location.href = "../dashboard/index.html";
+    });
+  }
+});
 
 function setMessage(text, isError = false) {
   messageEl.textContent = text;
   messageEl.style.color = isError ? "#fca5a5" : "#fde68a";
 }
-document.addEventListener("DOMContentLoaded", () => {
-    const backDashboardBtn = document.getElementById("backDashboardBtn");
-  
-    if (backDashboardBtn) {
-      backDashboardBtn.addEventListener("click", () => {
-        window.location.href = "../dashboard/index.html";
-      });
-    }
-  });
-async function pickQuestionFolder() {
-  try {
-    if (!window.showDirectoryPicker) {
-      setMessage("Trình duyệt hiện tại không hỗ trợ chọn thư mục. Hãy dùng Chrome hoặc Edge.", true);
-      return;
-    }
 
-    questionFolderHandle = await window.showDirectoryPicker();
-    folderStatus.textContent = `Đã chọn thư mục: ${questionFolderHandle.name}`;
-    setMessage("Đã chọn thư mục question.");
-  } catch (error) {
-    setMessage("Bạn đã hủy chọn thư mục hoặc trình duyệt chặn quyền.", true);
-  }
+function slugify(name) {
+  let value = name.trim().toLowerCase();
+
+  value = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  value = value.replace(/đ/g, "d").replace(/Đ/g, "d");
+  value = value.replace(/[^a-z0-9\s\-_]/g, "");
+  value = value.replace(/\s+/g, "-");
+  value = value.replace(/-+/g, "-");
+  value = value.replace(/^-+|-+$/g, "");
+
+  return value || "bo-cau-hoi";
 }
-
-function normalizeFileName(name) {
-    let value = name.trim().toLowerCase();
-  
-    // bỏ dấu tiếng Việt
-    value = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    value = value.replace(/đ/g, "d").replace(/Đ/g, "d");
-  
-    // bỏ ký tự đặc biệt, chỉ giữ chữ, số, khoảng trắng, gạch ngang, gạch dưới
-    value = value.replace(/[^a-z0-9\s\-_]/g, "");
-  
-    // thay khoảng trắng bằng dấu -
-    value = value.replace(/\s+/g, "-");
-  
-    // gộp nhiều dấu - liên tiếp
-    value = value.replace(/-+/g, "-");
-  
-    // bỏ dấu - ở đầu/cuối
-    value = value.replace(/^-+|-+$/g, "");
-  
-    if (!value) {
-      value = "bo-cau-hoi";
-    }
-  
-    if (!value.endsWith(".json")) {
-      value += ".json";
-    }
-  
-    return value;
-  }
 
 function parseQuestionsFromText(rawText) {
   const blocks = rawText
     .trim()
     .split(/\n\s*\n/)
-    .map(block => block.split("\n").map(line => line.trim()).filter(Boolean));
+    .map((block) =>
+      block
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean)
+    );
 
   const questions = blocks.map((lines, blockIndex) => {
     if (lines.length !== 5) {
-      throw new Error(`Câu ${blockIndex + 1} không đúng định dạng. Mỗi câu phải có 1 dòng câu hỏi + 4 dòng đáp án.`);
+      throw new Error(
+        `Câu ${blockIndex + 1} không đúng định dạng. Mỗi câu phải có 1 dòng câu hỏi + 4 dòng đáp án.`
+      );
     }
 
     const question = lines[0];
@@ -106,12 +89,12 @@ function parseQuestionsFromText(rawText) {
       throw new Error(`Câu ${blockIndex + 1} chưa đánh dấu đáp án đúng bằng dấu *.`);
     }
 
-    if (options.some(opt => !opt)) {
+    if (options.some((opt) => !opt)) {
       throw new Error(`Câu ${blockIndex + 1} có đáp án rỗng.`);
     }
 
     return {
-      id: blockIndex + 1,
+      orderIndex: blockIndex + 1,
       question,
       options,
       correctIndex
@@ -122,27 +105,27 @@ function parseQuestionsFromText(rawText) {
 }
 
 function buildQuizObject() {
-    const title = quizTitleEl?.value.trim() || "";
-    const description = quizDescriptionEl?.value.trim() || "";
-    const rawText = rawInputEl?.value.trim() || "";
-  
-    if (!title) throw new Error("Bạn chưa nhập tên bộ câu hỏi.");
-    if (!rawText) throw new Error("Bạn chưa dán nội dung câu hỏi.");
-  
-    const fileName = normalizeFileName(title);
-    const questions = parseQuestionsFromText(rawText);
-  
-    return {
-      meta: {
-        title,
-        fileName,
-        description,
-        totalQuestions: questions.length,
-        createdAt: new Date().toISOString()
-      },
-      questions
-    };
-  }
+  const title = quizTitleEl?.value.trim() || "";
+  const description = quizDescriptionEl?.value.trim() || "";
+  const rawText = rawInputEl?.value.trim() || "";
+
+  if (!title) throw new Error("Bạn chưa nhập tên bộ câu hỏi.");
+  if (!rawText) throw new Error("Bạn chưa dán nội dung câu hỏi.");
+
+  const slug = slugify(title);
+  const questions = parseQuestionsFromText(rawText);
+
+  return {
+    meta: {
+      title,
+      slug,
+      description,
+      totalQuestions: questions.length,
+      createdAt: new Date().toISOString()
+    },
+    questions
+  };
+}
 
 function handleParse() {
   try {
@@ -150,75 +133,98 @@ function handleParse() {
     setMessage(`Đã chuẩn hóa thành công ${parsedQuiz.questions.length} câu hỏi.`);
   } catch (error) {
     parsedQuiz = null;
-    previewEl.textContent = "";
     setMessage(error.message, true);
   }
 }
 
+async function supabaseFetch(path, options = {}) {
+  const response = await fetch(`${SUPABASE_URL}${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+
+  return response;
+}
+
+async function upsertQuiz(meta) {
+  const payload = {
+    title: meta.title,
+    slug: meta.slug,
+    description: meta.description || ""
+  };
+
+  const res = await supabaseFetch("/rest/v1/quizzes?on_conflict=slug", {
+    method: "POST",
+    headers: {
+      Prefer: "resolution=merge-duplicates,return=representation"
+    },
+    body: JSON.stringify([payload])
+  });
+
+  const data = await res.json();
+
+  if (!Array.isArray(data) || !data[0]?.id) {
+    throw new Error("Không lấy được quiz id sau khi lưu bảng quizzes.");
+  }
+
+  return data[0];
+}
+
+async function deleteOldQuestionsByQuizId(quizId) {
+  await supabaseFetch(`/rest/v1/questions_list?quiz_id=eq.${quizId}`, {
+    method: "DELETE"
+  });
+}
+
+async function insertQuestions(quiz, questions) {
+  const rows = questions.map((q) => ({
+    quiz_id: quiz.id,
+    quiz_name: quiz.slug,
+    question: q.question,
+    option_a: q.options[0],
+    option_b: q.options[1],
+    option_c: q.options[2],
+    option_d: q.options[3],
+    correct_index: q.correctIndex
+  }));
+
+  await supabaseFetch("/rest/v1/questions_list", {
+    method: "POST",
+    headers: {
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify(rows)
+  });
+}
+
 async function handleSave() {
   try {
-    if (!questionFolderHandle) {
-      setMessage("Bạn cần chọn thư mục question trước khi lưu.", true);
-      return;
-    }
-
     if (!parsedQuiz) {
       parsedQuiz = buildQuizObject();
     }
 
-    const jsonText = JSON.stringify(parsedQuiz, null, 2);
+    setMessage("Đang lưu bộ câu hỏi lên Supabase...");
 
-    const fileHandle = await questionFolderHandle.getFileHandle(parsedQuiz.meta.fileName, {
-      create: true
-    });
-    const writable = await fileHandle.createWritable();
-    await writable.write(jsonText);
-    await writable.close();
+    const savedQuiz = await upsertQuiz(parsedQuiz.meta);
 
-    await updateManifest(parsedQuiz.meta);
+    await deleteOldQuestionsByQuizId(savedQuiz.id);
+    await insertQuestions(savedQuiz, parsedQuiz.questions);
 
-    setMessage(`Đã lưu file ${parsedQuiz.meta.fileName} và cập nhật manifest.json`);
+    setMessage(
+      `Đã lưu thành công bộ câu hỏi "${savedQuiz.title}" với ${parsedQuiz.questions.length} câu lên Supabase.`
+    );
   } catch (error) {
+    console.error("handleSave error:", error);
     setMessage(`Lưu thất bại: ${error.message}`, true);
   }
 }
-
-async function updateManifest(meta) {
-  let manifest = { quizzes: [] };
-
-  try {
-    const manifestHandle = await questionFolderHandle.getFileHandle("manifest.json", { create: true });
-    const file = await manifestHandle.getFile();
-    const text = await file.text();
-
-    if (text.trim()) {
-      manifest = JSON.parse(text);
-      if (!Array.isArray(manifest.quizzes)) {
-        manifest.quizzes = [];
-      }
-    }
-
-    const existingIndex = manifest.quizzes.findIndex(item => item.fileName === meta.fileName);
-
-    const entry = {
-      title: meta.title,
-      fileName: meta.fileName,
-      description: meta.description,
-      totalQuestions: meta.totalQuestions,
-      updatedAt: new Date().toISOString()
-    };
-
-    if (existingIndex >= 0) {
-      manifest.quizzes[existingIndex] = entry;
-    } else {
-      manifest.quizzes.push(entry);
-    }
-
-    const writable = await manifestHandle.createWritable();
-    await writable.write(JSON.stringify(manifest, null, 2));
-    await writable.close();
-  } catch (error) {
-    throw new Error(`Không thể cập nhật manifest.json: ${error.message}`);
-  }
-}
-

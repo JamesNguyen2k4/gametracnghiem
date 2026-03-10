@@ -3,6 +3,9 @@
 // ========================================
 const WIN_THRESHOLD = 4;
 
+const SUPABASE_URL = "https://izjtgtgnyedmdzmljbte.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6anRndGdueWVkbWR6bWxqYnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTM2MjYsImV4cCI6MjA4ODcyOTYyNn0.b5JgqCSgXvrU8msDvvI85xvf8J5578Z981Bf_F43GiQ";
+
 // Mapping phím cho 2 đội
 const KEY_BINDINGS = {
   a: { team: "A", answerIndex: 0 },
@@ -22,7 +25,6 @@ const TEAM_KEYS = {
   B: ["H", "J", "K", "L"]
 };
 
-// PHẢI là let vì sẽ được thay bằng dữ liệu JSON
 let TEAM_A_QUESTIONS = [];
 let TEAM_B_QUESTIONS = [];
 
@@ -50,6 +52,25 @@ async function initSDK() {
   return;
 }
 
+async function supabaseFetch(path, options = {}) {
+  const response = await fetch(`${SUPABASE_URL}${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+
+  return response;
+}
+
 // ========================================
 // LOAD DANH SÁCH BỘ CÂU HỎI
 // ========================================
@@ -58,26 +79,28 @@ async function loadQuizManifest() {
   if (!select) return;
 
   try {
-    const res = await fetch("../question/manifest.json");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await supabaseFetch(
+      "/rest/v1/quizzes?select=id,title,slug,description&order=id.asc"
+    );
 
-    const manifest = await res.json();
+    const quizzes = await res.json();
     select.innerHTML = "";
 
-    if (!manifest.quizzes || !Array.isArray(manifest.quizzes) || manifest.quizzes.length === 0) {
+    if (!Array.isArray(quizzes) || quizzes.length === 0) {
       select.innerHTML = '<option value="">Chưa có bộ câu hỏi nào</option>';
       return;
     }
 
-    manifest.quizzes.forEach((quiz) => {
+    quizzes.forEach((quiz) => {
       const option = document.createElement("option");
-      option.value = quiz.fileName;
-      option.textContent = `${quiz.title} (${quiz.totalQuestions} câu)`;
+      option.value = quiz.id;
+      option.textContent = quiz.title;
+      option.dataset.slug = quiz.slug || "";
       select.appendChild(option);
     });
   } catch (error) {
     console.error("loadQuizManifest error:", error);
-    select.innerHTML = '<option value="">Không đọc được manifest.json</option>';
+    select.innerHTML = '<option value="">Không đọc được danh sách bộ câu hỏi</option>';
   }
 }
 
@@ -95,7 +118,6 @@ function splitQuestionsForTeams(allQuestions) {
   TEAM_A_QUESTIONS = allQuestions.slice(0, midpoint);
   TEAM_B_QUESTIONS = allQuestions.slice(midpoint);
 
-  // Nếu chỉ có 1 nửa thì copy sang đội còn lại để game không vỡ
   if (TEAM_B_QUESTIONS.length === 0) {
     TEAM_B_QUESTIONS = [...TEAM_A_QUESTIONS];
   }
@@ -108,47 +130,49 @@ async function loadSelectedQuiz() {
   const select = document.getElementById("quizSelect");
   if (!select) return;
 
-  const fileName = select.value;
-  if (!fileName) return;
+  const quizId = select.value;
+  if (!quizId) return;
 
   try {
-    const res = await fetch(`../question/${fileName}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const selectedOption = select.options[select.selectedIndex];
+    const quizTitle = selectedOption?.textContent || "Bộ câu hỏi";
 
-    const quizData = await res.json();
+    const res = await supabaseFetch(
+      `/rest/v1/questions_list?select=id,question,option_a,option_b,option_c,option_d,correct_index,quiz_id&quiz_id=eq.${quizId}&order=id.asc`
+    );
 
-    if (!quizData.questions || !Array.isArray(quizData.questions)) {
-      throw new Error("File JSON không có mảng questions hợp lệ.");
+    const rows = await res.json();
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      throw new Error("Bộ câu hỏi này chưa có dữ liệu.");
     }
 
-    const normalizedQuestions = quizData.questions.map((q, idx) => ({
+    const normalizedQuestions = rows.map((q, idx) => ({
       id: q.id ?? idx + 1,
       question: q.question ?? "",
-      options: Array.isArray(q.options) ? q.options : [],
-      correctIndex: Number(q.correctIndex)
+      options: [q.option_a, q.option_b, q.option_c, q.option_d],
+      correctIndex: Number(q.correct_index)
     }));
 
-    // Validate nhẹ
     const isInvalid = normalizedQuestions.some(
       (q) =>
         !q.question ||
         !Array.isArray(q.options) ||
         q.options.length !== 4 ||
+        q.options.some((opt) => !opt) ||
         Number.isNaN(q.correctIndex) ||
         q.correctIndex < 0 ||
         q.correctIndex > 3
     );
 
     if (isInvalid) {
-      throw new Error("Một hoặc nhiều câu hỏi trong JSON không đúng định dạng.");
+      throw new Error("Một hoặc nhiều câu hỏi trong database không đúng định dạng.");
     }
 
     splitQuestionsForTeams(normalizedQuestions);
     resetGame();
 
-    if (quizData.meta?.title) {
-      alert(`Đã tải bộ câu hỏi: ${quizData.meta.title}`);
-    }
+    alert(`Đã tải bộ câu hỏi: ${quizTitle}`);
   } catch (error) {
     console.error("loadSelectedQuiz error:", error);
     alert(`Không thể tải bộ câu hỏi: ${error.message}`);
@@ -206,8 +230,10 @@ function getCompletedLeader() {
   const answeredCountA = getAnsweredCount("A");
   const answeredCountB = getAnsweredCount("B");
 
-  const teamACompleted = answeredCountA >= TEAM_A_QUESTIONS.length && TEAM_A_QUESTIONS.length > 0;
-  const teamBCompleted = answeredCountB >= TEAM_B_QUESTIONS.length && TEAM_B_QUESTIONS.length > 0;
+  const teamACompleted =
+    answeredCountA >= TEAM_A_QUESTIONS.length && TEAM_A_QUESTIONS.length > 0;
+  const teamBCompleted =
+    answeredCountB >= TEAM_B_QUESTIONS.length && TEAM_B_QUESTIONS.length > 0;
 
   if (teamACompleted && !teamBCompleted && teamAScore > teamBScore) {
     return "A";
@@ -238,14 +264,16 @@ function renderQuestion(team) {
 
   if (!questions.length) {
     questionEl.textContent = "Chưa có dữ liệu câu hỏi!";
-    optionsEl.innerHTML = '<p class="col-span-2 text-center text-white/70">Hãy chọn bộ câu hỏi.</p>';
+    optionsEl.innerHTML =
+      '<p class="col-span-2 text-center text-white/70">Hãy chọn bộ câu hỏi.</p>';
     progressEl.textContent = "Câu: 0/0";
     return;
   }
 
   if (index >= questions.length) {
     questionEl.textContent = "Đã hết câu hỏi!";
-    optionsEl.innerHTML = '<p class="col-span-2 text-center text-white/70">Chờ đội khác...</p>';
+    optionsEl.innerHTML =
+      '<p class="col-span-2 text-center text-white/70">Chờ đội khác...</p>';
     progressEl.textContent = `Câu: ${questions.length}/${questions.length}`;
     return;
   }
@@ -403,7 +431,6 @@ function submitAnswer(team, selectedIndex, source = "unknown") {
   }, 1600);
 }
 
-// Giữ tương thích nếu chỗ nào cũ còn gọi
 function handleAnswer(team, selectedIndex) {
   submitAnswer(team, selectedIndex, "legacy");
 }
@@ -469,7 +496,8 @@ function showWinner(team) {
   const overlay = document.getElementById("winnerOverlay");
   const title = document.getElementById("winnerTitle");
 
-  const teamName = team === "A" ? defaultConfig.team_a_name : defaultConfig.team_b_name;
+  const teamName =
+    team === "A" ? defaultConfig.team_a_name : defaultConfig.team_b_name;
 
   title.textContent = teamName;
   title.style.color = team === "A" ? "#3b82f6" : "#ef4444";
@@ -504,8 +532,10 @@ function resetGame() {
   teamBAnswered = false;
 
   const overlay = document.getElementById("winnerOverlay");
-  overlay.classList.add("hidden");
-  overlay.classList.remove("flex");
+  if (overlay) {
+    overlay.classList.add("hidden");
+    overlay.classList.remove("flex");
+  }
 
   updateTugOfWar();
   renderQuestion("A");
@@ -539,6 +569,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const resetBtn = document.getElementById("resetBtn");
   const loadQuizBtn = document.getElementById("loadQuizBtn");
+  const winnerResetBtn = document.getElementById("winnerResetBtn");
 
   if (resetBtn) {
     resetBtn.addEventListener("click", resetGame);
@@ -552,13 +583,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   setupKeyboardControls();
   await loadQuizManifest();
-  const backDashboardBtn = document.getElementById("backDashboardBtn");
 
+  const backDashboardBtn = document.getElementById("backDashboardBtn");
   if (backDashboardBtn) {
     backDashboardBtn.addEventListener("click", () => {
       window.location.href = "../dashboard/index.html";
     });
   }
+
   const quizSelect = document.getElementById("quizSelect");
   if (quizSelect && quizSelect.value) {
     await loadSelectedQuiz();
