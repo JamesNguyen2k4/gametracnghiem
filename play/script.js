@@ -23,7 +23,8 @@ let teamATimer = null;
 let teamBTimer = null;
 let teamATimeLeft = ANSWER_TIME;
 let teamBTimeLeft = ANSWER_TIME;
-
+let gameStarted = false;
+let gamePaused = true;
 //const SUPABASE_URL = "https://izjtgtgnyedmdzmljbte.supabase.co";
 //const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6anRndGdueWVkbWR6bWxqYnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTM2MjYsImV4cCI6MjA4ODcyOTYyNn0.b5JgqCSgXvrU8msDvvI85xvf8J5578Z981Bf_F43GiQ";
 
@@ -152,7 +153,120 @@ function clearTeamTimer(team) {
     setTimerByTeam(team, null);
   }
 }
+function startGame() {
+  if (gameEnded) return;
+  if (!TEAM_A_QUESTIONS.length && !TEAM_B_QUESTIONS.length) return;
 
+  gameStarted = true;
+  gamePaused = false;
+
+  setTimeLeftByTeam("A", ANSWER_TIME);
+  setTimeLeftByTeam("B", ANSWER_TIME);
+
+  renderQuestion("A");
+  renderQuestion("B");
+
+  updateGameControlButton();
+}
+function pauseGame() {
+  gamePaused = true;
+
+  clearTeamTimer("A");
+  clearTeamTimer("B");
+
+  setTeamOptionsDisabled("A", true);
+  setTeamOptionsDisabled("B", true);
+
+  showPauseState("A");
+  showPauseState("B");
+
+  updateGameControlButton();
+}
+function setTeamOptionsDisabled(team, disabled) {
+  const optionsEl = document.getElementById(`team${team}Options`);
+  if (!optionsEl) return;
+
+  const buttons = optionsEl.querySelectorAll("button");
+  buttons.forEach((btn) => {
+    btn.disabled = disabled;
+  });
+}
+function showPauseState(team) {
+  const statusEl = document.getElementById(`team${team}Status`);
+  if (!statusEl) return;
+
+  statusEl.textContent = "⏸️ ĐANG TẠM DỪNG";
+  statusEl.style.opacity = "1";
+}
+function resumeGame() {
+  if (gameEnded) return;
+  if (!gameStarted) return;
+
+  gamePaused = false;
+
+  setTeamOptionsDisabled("A", false);
+  setTeamOptionsDisabled("B", false);
+
+  const statusA = document.getElementById("teamAStatus");
+  const statusB = document.getElementById("teamBStatus");
+
+  if (statusA && statusA.textContent.includes("TẠM DỪNG")) {
+    statusA.style.opacity = "0";
+    statusA.textContent = "";
+  }
+
+  if (statusB && statusB.textContent.includes("TẠM DỪNG")) {
+    statusB.style.opacity = "0";
+    statusB.textContent = "";
+  }
+
+  if (!isTeamAnswered("A") && getCurrentQuestionIndex("A") < TEAM_A_QUESTIONS.length) {
+    startQuestionTimer("A", false);
+  }
+
+  if (!isTeamAnswered("B") && getCurrentQuestionIndex("B") < TEAM_B_QUESTIONS.length) {
+    startQuestionTimer("B", false);
+  }
+
+  updateGameControlButton();
+}
+function toggleGameControl() {
+  if (!gameStarted) {
+    startGame();
+    return;
+  }
+
+  if (gamePaused) {
+    resumeGame();
+  } else {
+    pauseGame();
+  }
+}
+function updateGameControlButton() {
+  const btn = document.getElementById("gameControlBtn");
+  if (!btn) return;
+
+  if (!TEAM_A_QUESTIONS.length && !TEAM_B_QUESTIONS.length) {
+    btn.textContent = "▶️ Bắt đầu";
+    btn.disabled = true;
+    btn.classList.add("opacity-50", "cursor-not-allowed");
+    return;
+  }
+
+  btn.disabled = false;
+  btn.classList.remove("opacity-50", "cursor-not-allowed");
+
+  if (!gameStarted) {
+    btn.textContent = "▶️ Bắt đầu";
+    return;
+  }
+
+  if (gamePaused) {
+    btn.textContent = "▶️ Tiếp tục";
+  } else {
+    btn.textContent = "⏸️ Tạm dừng";
+  }
+}
 function updateTimerUI(team) {
   const progressEl = document.getElementById(`team${team}Progress`);
   const questions = getQuestionsByTeam(team);
@@ -169,13 +283,19 @@ function updateTimerUI(team) {
   progressEl.textContent = `Câu: ${displayIndex}/${questions.length} • ${getTimeLeftByTeam(team)}s`;
 }
 
-function startQuestionTimer(team) {
+function startQuestionTimer(team, resetTime = false) {
+  if (gamePaused || gameEnded) return;
+
   clearTeamTimer(team);
-  setTimeLeftByTeam(team, ANSWER_TIME);
+
+  if (resetTime) {
+    setTimeLeftByTeam(team, ANSWER_TIME);
+  }
+
   updateTimerUI(team);
 
   const timer = setInterval(() => {
-    if (gameEnded || isTeamAnswered(team)) {
+    if (gameEnded || isTeamAnswered(team) || gamePaused) {
       clearTeamTimer(team);
       return;
     }
@@ -186,13 +306,17 @@ function startQuestionTimer(team) {
 
     if (nextValue <= 0) {
       clearTeamTimer(team);
+      setTimeLeftByTeam(team, 0);
+      updateTimerUI(team);
+
       setAnsweredState(team, true);
       showTeamStatus(team, false);
 
       setTimeout(() => {
         advanceQuestion(team);
+        setTimeLeftByTeam(team, ANSWER_TIME);
         renderQuestion(team);
-      }, 1000);
+      }, 900);
     }
   }, 1000);
 
@@ -313,9 +437,9 @@ async function loadSelectedQuiz() {
     }
 
     splitQuestionsForTeams(normalizedQuestions);
-    resetGame();
-
+    resetGame(false);
     alert(`Đã tải bộ câu hỏi: ${quizTitle}`);
+    updateGameControlButton();
   } catch (error) {
     console.error("loadSelectedQuiz error:", error);
     alert(`Không thể tải bộ câu hỏi: ${error.message}`);
@@ -393,6 +517,11 @@ function getCompletedLeader() {
 // RENDER CÂU HỎI
 // ========================================
 function renderQuestion(team) {
+  if (gamePaused) {
+    renderQuestionPaused(team);
+    return;
+  }
+
   const questions = getQuestionsByTeam(team);
   const index = getCurrentQuestionIndex(team);
   const questionEl = document.getElementById(`team${team}Question`);
@@ -423,7 +552,11 @@ function renderQuestion(team) {
 
   const q = questions[index];
   questionEl.textContent = q.question;
-  setTimeLeftByTeam(team, ANSWER_TIME);
+  
+  if (!isTeamAnswered(team) && getTimeLeftByTeam(team) <= 0) {
+    setTimeLeftByTeam(team, ANSWER_TIME);
+  }
+  
   updateTimerUI(team);
 
   const labels = ["A", "B", "C", "D"];
@@ -468,7 +601,8 @@ function renderQuestion(team) {
       submitAnswer(team, selectedIndex, "pointer");
     });
   });
-  startQuestionTimer(team);
+
+  startQuestionTimer(team, false);
 }
 
 // ========================================
@@ -508,6 +642,7 @@ function showTeamStatus(team, isCorrect) {
 // ========================================
 function submitAnswer(team, selectedIndex, source = "unknown") {
   if (gameEnded) return;
+  if (gamePaused) return;
   if (isTeamAnswered(team)) return;
 
   const questions = getQuestionsByTeam(team);
@@ -519,6 +654,7 @@ function submitAnswer(team, selectedIndex, source = "unknown") {
 
   setAnsweredState(team, true);
   clearTeamTimer(team);
+
   const isCorrect = selectedIndex === q.correctIndex;
 
   updateAnswerUI(team, selectedIndex, q.correctIndex, isCorrect);
@@ -526,9 +662,9 @@ function submitAnswer(team, selectedIndex, source = "unknown") {
 
   if (isCorrect) {
     incrementTeamScore(team);
-    triggerPullAnimation(team);
-    updateTugOfWar();
   }
+
+  updateTugOfWar();
 
   const scoreDiff = Math.abs(teamAScore - teamBScore);
 
@@ -572,6 +708,7 @@ function submitAnswer(team, selectedIndex, source = "unknown") {
 
   setTimeout(() => {
     advanceQuestion(team);
+    setTimeLeftByTeam(team, ANSWER_TIME);
     renderQuestion(team);
   }, 1600);
 }
@@ -678,19 +815,63 @@ function showDraw() {
 
 // ========================================
 // RESET
-// ========================================
-function resetGame() {
+function renderQuestionPaused(team) {
+  const questions = getQuestionsByTeam(team);
+  const index = getCurrentQuestionIndex(team);
+
+  const questionEl = document.getElementById(`team${team}Question`);
+  const optionsEl = document.getElementById(`team${team}Options`);
+  const progressEl = document.getElementById(`team${team}Progress`);
+  const statusEl = document.getElementById(`team${team}Status`);
+
+  if (!questionEl || !optionsEl || !progressEl || !statusEl) return;
+
+  statusEl.textContent = "";
+  statusEl.style.opacity = "0";
+
+  if (!questions.length) {
+    questionEl.textContent = "Chưa có dữ liệu câu hỏi!";
+    optionsEl.innerHTML = `<p class="col-span-2 text-center text-white/70">Hãy chọn bộ câu hỏi.</p>`;
+    progressEl.textContent = "Câu: 0/0";
+    return;
+  }
+
+  if (index >= questions.length) {
+    questionEl.textContent = "Đã hết câu hỏi!";
+    optionsEl.innerHTML = `<p class="col-span-2 text-center text-white/70">Chờ đội khác...</p>`;
+    progressEl.textContent = `Câu: ${questions.length}/${questions.length}`;
+    return;
+  }
+
+  const q = questions[index];
+  questionEl.textContent = q.question;
+  progressEl.textContent = `Câu: ${index + 1}/${questions.length}`;
+
+  optionsEl.innerHTML = `
+    <div class="col-span-2 text-center text-white font-semibold bg-black/20 rounded-xl p-4 border border-white/10">
+      ${gameStarted ? "⏸️ Trò chơi đang tạm dừng" : "▶️ Nhấn Bắt đầu để chơi"}
+    </div>
+  `;
+}
+function resetGame(autoStart = false) {
   teamAScore = 0;
   teamBScore = 0;
   teamAIndex = 0;
   teamBIndex = 0;
   gameEnded = false;
+
   teamAAnswered = false;
   teamBAnswered = false;
+
+  gameStarted = autoStart;
+  gamePaused = !autoStart;
+
   clearTeamTimer("A");
   clearTeamTimer("B");
+
   setTimeLeftByTeam("A", ANSWER_TIME);
   setTimeLeftByTeam("B", ANSWER_TIME);
+
   const overlay = document.getElementById("winnerOverlay");
   if (overlay) {
     overlay.classList.add("hidden");
@@ -698,8 +879,16 @@ function resetGame() {
   }
 
   updateTugOfWar();
-  renderQuestion("A");
-  renderQuestion("B");
+
+  if (autoStart) {
+    renderQuestion("A");
+    renderQuestion("B");
+  } else {
+    renderQuestionPaused("A");
+    renderQuestionPaused("B");
+  }
+
+  updateGameControlButton();
 }
 
 // ========================================
@@ -709,6 +898,10 @@ function setupKeyboardControls() {
   document.addEventListener("keydown", (event) => {
     const activeTag = document.activeElement?.tagName?.toLowerCase();
     if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") {
+      return;
+    }
+
+    if (gamePaused || !gameStarted || gameEnded) {
       return;
     }
 
@@ -726,36 +919,42 @@ function setupKeyboardControls() {
 // ========================================
 document.addEventListener("DOMContentLoaded", async () => {
   const backDashboardBtn = document.getElementById("backDashboardBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const loadQuizBtn = document.getElementById("loadQuizBtn");
+  const winnerResetBtn = document.getElementById("winnerResetBtn");
+  const teamANameEl = document.getElementById("teamAName");
+  const teamBNameEl = document.getElementById("teamBName");
+  const gameControlBtn = document.getElementById("gameControlBtn");
+  const quizSelect = document.getElementById("quizSelect");
+
   if (backDashboardBtn) {
     backDashboardBtn.addEventListener("click", () => {
       window.location.href = "../dashboard/index.html";
     });
   }
 
-  console.log("back button listener attached");
-
   await initSDK();
 
-  const resetBtn = document.getElementById("resetBtn");
-  const loadQuizBtn = document.getElementById("loadQuizBtn");
-  const winnerResetBtn = document.getElementById("winnerResetBtn");
-  const teamANameEl = document.getElementById("teamAName");
-  const teamBNameEl = document.getElementById("teamBName");
+  if (gameControlBtn) {
+    gameControlBtn.addEventListener("click", toggleGameControl);
+  }
 
   if (teamANameEl) {
-    teamANameEl.querySelector("span:last-child").textContent = TEAM_A_NAME;
+    const span = teamANameEl.querySelector("span:last-child");
+    if (span) span.textContent = TEAM_A_NAME;
   }
 
   if (teamBNameEl) {
-    teamBNameEl.querySelector("span:last-child").textContent = TEAM_B_NAME;
+    const span = teamBNameEl.querySelector("span:last-child");
+    if (span) span.textContent = TEAM_B_NAME;
   }
 
   if (resetBtn) {
-    resetBtn.addEventListener("click", resetGame);
+    resetBtn.addEventListener("click", () => resetGame(false));
   }
 
   if (winnerResetBtn) {
-    winnerResetBtn.addEventListener("click", resetGame);
+    winnerResetBtn.addEventListener("click", () => resetGame(false));
   }
 
   if (loadQuizBtn) {
@@ -763,12 +962,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   setupKeyboardControls();
-  await loadQuizManifest();
 
-  const quizSelect = document.getElementById("quizSelect");
+  await loadQuizManifest();
+  updateGameControlButton();
+
   if (quizSelect && quizSelect.value) {
     await loadSelectedQuiz();
   } else {
-    resetGame();
+    resetGame(false);
   }
 });
