@@ -505,10 +505,6 @@ function buildExportRows(rows) {
     const members = normalizeMembers(item.group_members, item.student_name);
 
     if (!members.length) {
-      exportRows.push({
-        "Họ tên học sinh": "",
-        "Số điểm": groupScore
-      });
       return;
     }
 
@@ -517,6 +513,29 @@ function buildExportRows(rows) {
         "Họ tên học sinh": member,
         "Số điểm": groupScore
       });
+    });
+  });
+
+  exportRows.sort((a, b) => {
+    const fullNameA = String(a["Họ tên học sinh"] || "").trim();
+    const fullNameB = String(b["Họ tên học sinh"] || "").trim();
+
+    const partsA = fullNameA.split(/\s+/);
+    const partsB = fullNameB.split(/\s+/);
+
+    const lastNameA = partsA.length ? partsA[partsA.length - 1] : "";
+    const lastNameB = partsB.length ? partsB[partsB.length - 1] : "";
+
+    const compareLastName = lastNameA.localeCompare(lastNameB, "vi", {
+      sensitivity: "base"
+    });
+
+    if (compareLastName !== 0) {
+      return compareLastName;
+    }
+
+    return fullNameA.localeCompare(fullNameB, "vi", {
+      sensitivity: "base"
     });
   });
 
