@@ -108,6 +108,15 @@
           </div>
 
           <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <label for="roomSelect" class="text-sm font-semibold text-brand-700">Chọn phòng</label>
+              <select
+                id="roomSelect"
+                class="border border-brand-200 rounded-xl px-3 py-2 text-sm bg-white/80 text-brand-900 outline-none min-w-[220px]"
+              >
+                <option value="">Đang tải danh sách phòng...</option>
+              </select>
+            </div>
             <button id="refreshBtn" class="btn-primary flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm">
               <i data-lucide="refresh-cw" class="w-4 h-4"></i>
               Làm mới

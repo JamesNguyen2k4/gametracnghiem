@@ -120,7 +120,34 @@ function getTop5Fastest(rows) {
     .sort((a, b) => new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime())
     .slice(0, 5);
 }
+async function fetchOwnedExams(userId) {
+  const { data, error } = await window.supabaseClient
+    .from("exam")
+    .select("id, nameexam, description, deadline, room_id")
+    .eq("id_usermake", userId)
+    .order("id", { ascending: false });
 
+  if (error) throw error;
+  return data || [];
+}
+function renderRoomSelect(exams, selectedRoomId = "") {
+  const roomSelect = document.getElementById("roomSelect");
+  if (!roomSelect) return;
+
+  if (!exams.length) {
+    roomSelect.innerHTML = `<option value="">Chưa có phòng thi nào</option>`;
+    return;
+  }
+
+  roomSelect.innerHTML = exams.map((exam) => {
+    const selected = exam.room_id === selectedRoomId ? "selected" : "";
+    return `
+      <option value="${exam.room_id}" ${selected}>
+        ${exam.nameexam} (${exam.room_id})
+      </option>
+    `;
+  }).join("");
+}
 function getRoomIdFromQuery() {
   const params = new URLSearchParams(window.location.search);
   return (params.get("roomId") || "").trim();
@@ -565,21 +592,15 @@ function exportExcel() {
 
   showToast("Đã xuất file Excel.");
 }
-
-async function loadRankingPage() {
-  const roomId = getRoomIdFromQuery();
-
+async function loadRankingByRoomId(userId, roomId) {
   if (!roomId) {
-    showToast("Thiếu roomId trên URL.");
+    showToast("Thiếu mã phòng.");
     return;
   }
 
   try {
-    const user = await requireAuthOrRedirect();
-    if (!user) return;
-    currentUser = user;
+    const exam = await fetchOwnedExamByRoomId(userId, roomId);
 
-    const exam = await fetchOwnedExamByRoomId(user.id, roomId);
     if (!exam) {
       showToast("Bạn không có quyền truy cập phòng thi này.");
       return;
@@ -596,6 +617,30 @@ async function loadRankingPage() {
     renderTable(exam, submissions);
     lucide.createIcons();
   } catch (error) {
+    console.error("loadRankingByRoomId error:", error);
+    showToast("Không tải được dữ liệu phòng thi.");
+  }
+}
+async function loadRankingPage() {
+  try {
+    const user = await requireAuthOrRedirect();
+    if (!user) return;
+    currentUser = user;
+
+    const exams = await fetchOwnedExams(user.id);
+    const roomIdFromQuery = getRoomIdFromQuery();
+    const defaultRoomId =
+      roomIdFromQuery || (exams.length ? exams[0].room_id : "");
+
+    renderRoomSelect(exams, defaultRoomId);
+
+    if (!defaultRoomId) {
+      showToast("Bạn chưa có phòng thi nào.");
+      return;
+    }
+
+    await loadRankingByRoomId(user.id, defaultRoomId);
+  } catch (error) {
     console.error("loadRankingPage error:", error);
     showToast("Không tải được bảng xếp hạng.");
   }
@@ -607,7 +652,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   const refreshBtn = document.getElementById("refreshBtn");
   const exportExcelBtn = document.getElementById("exportExcelBtn");
   const exportExcelBtnBottom = document.getElementById("exportExcelBtnBottom");
+  const roomSelect = document.getElementById("roomSelect");
 
+  if (roomSelect) {
+    roomSelect.addEventListener("change", async () => {
+      const selectedRoomId = roomSelect.value;
+      if (!selectedRoomId || !currentUser) return;
+  
+      const newUrl = `${window.location.pathname}?roomId=${encodeURIComponent(selectedRoomId)}`;
+      window.history.replaceState({}, "", newUrl);
+  
+      await loadRankingByRoomId(currentUser.id, selectedRoomId);
+    });
+  }
   if (backDashboardBtn) {
     backDashboardBtn.addEventListener("click", goBackDashboard);
   }
@@ -617,7 +674,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (refreshBtn) {
-    refreshBtn.addEventListener("click", loadRankingPage);
+    refreshBtn.addEventListener("click", async () => {
+      const selectedRoomId = roomSelect?.value || currentExam?.room_id;
+  
+      if (!selectedRoomId || !currentUser) {
+        await loadRankingPage();
+        return;
+      }
+  
+      await loadRankingByRoomId(currentUser.id, selectedRoomId);
+    });
   }
 
   if (exportExcelBtn) {
