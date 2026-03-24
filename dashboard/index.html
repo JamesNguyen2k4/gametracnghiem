@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EduGame</title>
+  <!--ảnh đại diện-->
+  <link rel="icon" type="image/png" href="../image/logo.ico" />
+  <title>Trang chủ - EduGame</title>
 
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
@@ -40,8 +42,12 @@
 
     <header class="relative z-10 px-6 py-5 flex items-center justify-between flex-wrap gap-4">
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #7c3aed, #f59e0b);">
-          <i data-lucide="gamepad-2" style="width:22px;height:22px;color:#fff;"></i>
+        <div class="w-11 h-11 rounded-xl overflow-hidden shrink-0 shadow-lg">
+          <img 
+            src="../image/logo.ico" 
+            alt="Logo EduGame"
+            class="w-full h-full object-cover"
+          />
         </div>
         <span class="text-white font-extrabold text-xl tracking-tight">EduGame</span>
       </div>
