@@ -126,6 +126,51 @@ function countSubmissionsByRoom(submissionRows) {
   return map;
 }
 
+async function deleteSubmissionsByRoomId(roomId) {
+  const { error } = await window.supabaseClient
+    .from("exam_submissions")
+    .delete()
+    .eq("room_id", roomId);
+
+  if (error) throw error;
+}
+
+async function deleteExamById(examId) {
+  const { error } = await window.supabaseClient
+    .from("exam")
+    .delete()
+    .eq("id", examId);
+
+  if (error) throw error;
+}
+
+async function handleDeleteExam(examId, roomId, examName) {
+  const confirmed = window.confirm(
+    `Bạn có chắc muốn xóa phòng thi "${examName || roomId}" không?\n\nToàn bộ bài nộp trong phòng này cũng sẽ bị xóa.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await deleteSubmissionsByRoomId(roomId);
+    await deleteExamById(examId);
+
+    delete submissionCache[roomId];
+    examCache = examCache.filter((item) => String(item.id) !== String(examId));
+
+    closeSubmissionModal();
+    showToast("Đã xóa phòng thi thành công.");
+
+    const user = await requireAuthOrRedirect();
+    if (!user) return;
+
+    await loadSubmissionManagerData(user.id);
+  } catch (error) {
+    console.error("handleDeleteExam error:", error);
+    showToast(error.message || "Không thể xóa phòng thi.");
+  }
+}
+
 function renderExamTable(exams, submissionRows) {
   const tbody = document.getElementById("examTableBody");
   const summary = document.getElementById("examTableSummary");
@@ -148,7 +193,7 @@ function renderExamTable(exams, submissionRows) {
     const expired = isExpired(exam.deadline);
     const statusHtml = expired
       ? '<span class="status-badge status-expired">Đã hết hạn</span>'
-      : '<span class="status-badge status-active">Đang nhận bài</span>';
+      : '<span class="status-badge status-active">Còn hạn</span>';
 
     return `
       <tr>
@@ -165,6 +210,7 @@ function renderExamTable(exams, submissionRows) {
               data-room-id="${exam.room_id}"
               title="Xem bài nộp"
               aria-label="Xem bài nộp"
+              type="button"
             >
               <i data-lucide="eye" class="w-4 h-4"></i>
             </button>
@@ -174,8 +220,21 @@ function renderExamTable(exams, submissionRows) {
               data-room-id="${exam.room_id}"
               title="Mở link nộp bài"
               aria-label="Mở link nộp bài"
+              type="button"
             >
               <i data-lucide="external-link" class="w-4 h-4"></i>
+            </button>
+
+            <button
+              class="icon-action-btn delete-btn"
+              data-exam-id="${exam.id}"
+              data-room-id="${exam.room_id}"
+              data-exam-name="${(exam.nameexam || "").replace(/"/g, "&quot;")}"
+              title="Xóa phòng thi"
+              aria-label="Xóa phòng thi"
+              type="button"
+            >
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
         </td>
@@ -194,6 +253,15 @@ function renderExamTable(exams, submissionRows) {
     btn.addEventListener("click", () => {
       const roomId = btn.dataset.roomId;
       openStudentSubmitPage(roomId);
+    });
+  });
+
+  tbody.querySelectorAll(".delete-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const examId = btn.dataset.examId;
+      const roomId = btn.dataset.roomId;
+      const examName = btn.dataset.examName;
+      await handleDeleteExam(examId, roomId, examName);
     });
   });
 
@@ -308,10 +376,12 @@ async function loadSubmissionManagerData(userId) {
     showToast("Không tải được danh sách phòng thi.");
   }
 }
+
 function openStudentSubmitPage(roomId) {
   const submitUrl = `../student_submit/index.html?roomId=${encodeURIComponent(roomId)}`;
   window.open(submitUrl, "_blank");
 }
+
 document.addEventListener("DOMContentLoaded", async () => {
   const user = await requireAuthOrRedirect();
   if (!user) return;

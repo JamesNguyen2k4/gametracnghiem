@@ -313,3 +313,22 @@ body {
 .access-btn {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
+.delete-btn {
+  background: linear-gradient(135deg, #f87171, #ef4444); /* đỏ mềm */
+  color: white;
+}
+
+.delete-btn:hover {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.35);
+}
+.icon-action-btn {
+  border-radius: 14px;
+  padding: 10px;
+  transition: all 0.2s ease;
+}
+
+.icon-action-btn:hover {
+  transform: translateY(-2px);
+}
