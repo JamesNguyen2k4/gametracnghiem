@@ -45,10 +45,11 @@ function goBackSubmitDashboard() {
   window.location.href = "../dashboard_submit/index.html";
 }
 
-async function fetchAllExams() {
+async function fetchAllExams(userId) {
   const { data, error } = await window.supabaseClient
     .from("exam")
-    .select("id, nameexam, description, deadline, room_id")
+    .select("id, nameexam, description, deadline, room_id, id_usermake")
+    .eq("id_usermake", userId)
     .order("id", { ascending: false });
 
   if (error) throw error;
@@ -256,6 +257,12 @@ async function openSubmissionModal(roomId) {
   const modal = document.getElementById("submissionModal");
   if (!modal) return;
 
+  const ownedExam = examCache.find((item) => item.room_id === roomId);
+  if (!ownedExam) {
+    showToast("Bạn không có quyền xem phòng thi này.");
+    return;
+  }
+
   try {
     let submissions = submissionCache[roomId];
 
@@ -276,12 +283,22 @@ function closeSubmissionModal() {
   document.getElementById("submissionModal")?.classList.add("hidden");
 }
 
-async function loadSubmissionManagerData() {
+async function loadSubmissionManagerData(userId) {
   try {
-    const [exams, submissionRows] = await Promise.all([
-      fetchAllExams(),
-      fetchSubmissionCounts()
-    ]);
+    const exams = await fetchAllExams(userId);
+
+    const roomIds = exams.map((item) => item.room_id).filter(Boolean);
+
+    let submissionRows = [];
+    if (roomIds.length > 0) {
+      const { data, error } = await window.supabaseClient
+        .from("exam_submissions")
+        .select("room_id")
+        .in("room_id", roomIds);
+
+      if (error) throw error;
+      submissionRows = data || [];
+    }
 
     examCache = exams;
     renderStats(exams, submissionRows);
@@ -326,7 +343,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  await loadSubmissionManagerData();
+  await loadSubmissionManagerData(user.id);
 
   lucide.createIcons();
 });
