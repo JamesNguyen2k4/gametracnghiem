@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduGame - Nộp bài</title>
+
+  <link rel="icon" type="image/png" href="../../image/logo.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            body: ['"Be Vietnam Pro"', 'sans-serif']
+          },
+          colors: {
+            brand: {
+              50: '#f5f0ff',
+              100: '#ede5ff',
+              200: '#d4c4ff',
+              400: '#9b6dff',
+              500: '#7c3aed',
+              600: '#6d28d9',
+              700: '#5b21b6',
+              800: '#4c1d95',
+              900: '#3b0764'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen bg-brand-50 font-body">
+  <div class="page-bg min-h-screen">
+    <header class="student-header">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+        <div class="flex items-center gap-3">
+          <div class="brand-logo-box">
+            <span class="text-white font-extrabold text-lg">E</span>
+          </div>
+          <div>
+            <span class="font-bold text-brand-800 text-lg leading-tight block">EduGame</span>
+            <span class="text-xs text-brand-400 font-medium">Nộp bài trực tuyến</span>
+          </div>
+        </div>
+
+        <div class="text-sm text-brand-500 font-medium">
+          Không cần đăng nhập để nộp bài
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <section class="mb-8">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="title-accent"></div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-brand-900">Nộp bài thi</h1>
+        </div>
+        <p class="text-brand-500 text-sm sm:text-base ml-5 max-w-2xl">
+          Nhập mã phòng hoặc dùng link giáo viên gửi để xem bài thi và nộp file bài làm.
+        </p>
+      </section>
+
+      <section class="grid lg:grid-cols-[1.2fr_0.8fr] gap-6">
+        <div class="glass-card rounded-3xl p-6 sm:p-8">
+          <div class="flex items-center gap-2 mb-6">
+            <i data-lucide="upload-cloud" class="w-5 h-5 text-brand-500"></i>
+            <h2 class="font-bold text-brand-800 text-lg">Thông tin nộp bài</h2>
+          </div>
+
+          <form id="submitForm" class="space-y-5">
+            <div>
+              <label for="roomIdInput" class="block text-sm font-semibold text-brand-700 mb-1.5">
+                Mã phòng thi <span class="text-red-500">*</span>
+              </label>
+              <div class="flex gap-3 flex-wrap sm:flex-nowrap">
+                <input
+                  id="roomIdInput"
+                  type="text"
+                  placeholder="VD: ABC123"
+                  class="form-input uppercase"
+                  required
+                />
+                <button
+                  id="checkRoomBtn"
+                  type="button"
+                  class="secondary-btn shrink-0"
+                >
+                  Kiểm tra phòng
+                </button>
+              </div>
+            </div>
+
+            <div id="examInfoBox" class="exam-info-box hidden">
+              <div class="flex items-center gap-2 mb-3">
+                <i data-lucide="file-text" class="w-4 h-4 text-brand-500"></i>
+                <h3 class="font-bold text-brand-800 text-base">Thông tin bài thi</h3>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <span class="label-mini">Tên bài thi</span>
+                  <p id="examNameText" class="text-brand-900 font-bold mt-1"></p>
+                </div>
+
+                <div>
+                  <span class="label-mini">Mô tả</span>
+                  <p id="examDescText" class="text-brand-700 text-sm mt-1 leading-relaxed"></p>
+                </div>
+
+                <div>
+                  <span class="label-mini">Hạn nộp</span>
+                  <p id="examDeadlineText" class="text-brand-700 text-sm mt-1"></p>
+                </div>
+
+                <div>
+                  <span class="label-mini">Trạng thái</span>
+                  <p id="examStatusText" class="text-sm font-semibold mt-1"></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-5">
+              <div>
+                <label for="studentNameInput" class="block text-sm font-semibold text-brand-700 mb-1.5">
+                  Họ tên học sinh
+                </label>
+                <input
+                  id="studentNameInput"
+                  type="text"
+                  placeholder="Nhập họ tên nếu nộp cá nhân"
+                  class="form-input"
+                />
+              </div>
+
+              <div>
+                <label for="classNameInput" class="block text-sm font-semibold text-brand-700 mb-1.5">
+                  Lớp <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="classNameInput"
+                  type="text"
+                  placeholder="VD: 10A1"
+                  class="form-input"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-5">
+              <div>
+                <label for="groupNameInput" class="block text-sm font-semibold text-brand-700 mb-1.5">
+                  Tên nhóm
+                </label>
+                <input
+                  id="groupNameInput"
+                  type="text"
+                  placeholder="Nhập nếu nộp theo nhóm"
+                  class="form-input"
+                />
+              </div>
+
+              <div>
+                <label for="groupMembersInput" class="block text-sm font-semibold text-brand-700 mb-1.5">
+                  Thành viên nhóm
+                </label>
+                <input
+                  id="groupMembersInput"
+                  type="text"
+                  placeholder="VD: An, Bình, Chi"
+                  class="form-input"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label for="fileInput" class="block text-sm font-semibold text-brand-700 mb-1.5">
+                Tệp bài nộp <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="fileInput"
+                type="file"
+                class="form-input file-input"
+                required
+                accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.txt"
+              />
+              <p class="hint-text mt-2">
+                Hỗ trợ ảnh, PDF, Word, PowerPoint, Excel, TXT, ZIP, RAR. Giới hạn thực tế phụ thuộc bucket Supabase của bạn.
+              </p>
+            </div>
+
+            <button
+              id="submitBtn"
+              type="submit"
+              class="primary-btn w-full"
+            >
+              <i data-lucide="send" class="w-5 h-5"></i>
+              Nộp bài
+            </button>
+          </form>
+        </div>
+
+        <div class="space-y-6">
+          <div class="glass-card rounded-3xl p-6 sm:p-8">
+            <div class="flex items-center gap-2 mb-4">
+              <i data-lucide="shield-check" class="w-5 h-5 text-brand-500"></i>
+              <h2 class="font-bold text-brand-800 text-lg">Lưu ý</h2>
+            </div>
+
+            <div class="space-y-3 text-sm text-brand-600 leading-relaxed">
+              <p>• Hãy kiểm tra đúng mã phòng trước khi nộp bài.</p>
+              <p>• Bạn có thể nộp theo cá nhân hoặc theo nhóm.</p>
+              <p>• Nếu nộp theo nhóm, nên điền tên nhóm và danh sách thành viên.</p>
+              <p>• Bài nộp sau hạn có thể bị từ chối tùy cấu hình.</p>
+              <p>• Sau khi nộp thành công, bạn nên lưu lại mã phòng và thời gian nộp.</p>
+            </div>
+          </div>
+
+          <div id="successCard" class="glass-card rounded-3xl p-6 sm:p-8 hidden success-card">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="p-2 rounded-xl bg-green-100">
+                <i data-lucide="check-circle-2" class="w-5 h-5 text-green-600"></i>
+              </div>
+              <h2 class="font-bold text-brand-800 text-lg">Nộp bài thành công</h2>
+            </div>
+
+            <div class="space-y-3 text-sm">
+              <div>
+                <span class="label-mini">Mã phòng</span>
+                <p id="successRoomId" class="font-bold text-brand-800 mt-1"></p>
+              </div>
+
+              <div>
+                <span class="label-mini">Tên file</span>
+                <p id="successFileName" class="text-brand-700 mt-1"></p>
+              </div>
+
+              <div>
+                <span class="label-mini">Thời gian nộp</span>
+                <p id="successTime" class="text-brand-700 mt-1"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast-box">
+    <i data-lucide="check" class="w-4 h-4"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../shared/supabase.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

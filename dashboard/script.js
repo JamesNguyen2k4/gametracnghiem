@@ -28,9 +28,7 @@ async function handleLogout() {
     // window.location.href = "../list_play/tamquoc/dashboard_tamquoc/index.html";
   }
   
-  function goToGrading() {
-    alert("Mục Chấm bài đang được phát triển.");
-  }
+
   
   async function loadUserInfo(user) {
     const userDisplay = document.getElementById("user-display");
@@ -82,7 +80,12 @@ async function handleLogout() {
     const keocoBtn = document.getElementById("keocoBtn");
     const tamquocBtn = document.getElementById("tamquocBtn");
     const gradingBtn = document.getElementById("gradingBtn");
-  
+
+    if (gradingBtn) {
+      gradingBtn.addEventListener("click", () => {
+        window.location.href = "../submit/dashboard_submit/index.html";
+      });
+    }
     if (logoutBtn) {
       logoutBtn.addEventListener("click", handleLogout);
     }
@@ -99,7 +102,5 @@ async function handleLogout() {
       tamquocBtn.addEventListener("click", goToTamquoc);
     }
   
-    if (gradingBtn) {
-      gradingBtn.addEventListener("click", goToGrading);
-    }
+    
   });

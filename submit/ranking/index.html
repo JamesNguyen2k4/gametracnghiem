@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduGame - Quản lý bài nộp</title>
+
+  <link rel="icon" type="image/png" href="../../image/logo.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            body: ['"Be Vietnam Pro"', 'sans-serif']
+          },
+          colors: {
+            examBg: '#0f0a1a',
+            examSurface: '#1a0e2e',
+            examPrimary: '#9333ea',
+            examSecondary: '#6366f1'
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen font-body exam-page-bg">
+  <div class="min-h-screen w-full overflow-auto">
+    <header class="exam-header">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+        <div class="flex items-center gap-3">
+          <div class="logo-box">
+            <i data-lucide="folder-open" class="w-5 h-5 text-white"></i>
+          </div>
+          <span class="text-xl font-bold text-white tracking-tight">
+            Edu<span class="text-purple-400">Game</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="backSubmitDashboardBtn" class="top-action-btn">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Quản trị thi
+          </button>
+
+          <button id="logoutBtn" class="top-action-btn top-action-btn-danger">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+      <section class="mb-8">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="title-accent"></div>
+          <h1 class="text-3xl md:text-4xl font-extrabold text-white">
+            Quản lý bài nộp
+          </h1>
+        </div>
+        <p class="text-purple-300/60 text-base ml-5 max-w-2xl">
+          Tìm theo mã phòng để xem danh sách bài nộp, tải file và theo dõi thời gian nộp của học sinh.
+        </p>
+      </section>
+
+      <section class="glass-card rounded-3xl p-6 mb-8">
+        <div class="grid lg:grid-cols-[1fr_auto_auto] gap-4 items-end">
+          <div>
+            <label for="roomIdInput" class="block text-sm font-semibold text-purple-200 mb-2">
+              Mã phòng thi
+            </label>
+            <input
+              id="roomIdInput"
+              type="text"
+              placeholder="Nhập mã phòng, ví dụ: ABC123"
+              class="manager-input uppercase"
+            />
+          </div>
+
+          <div>
+            <label for="sortSelect" class="block text-sm font-semibold text-purple-200 mb-2">
+              Sắp xếp
+            </label>
+            <select id="sortSelect" class="manager-input">
+              <option value="asc">Nộp sớm nhất</option>
+              <option value="desc">Nộp muộn nhất</option>
+            </select>
+          </div>
+
+          <button id="searchBtn" class="primary-btn h-[48px]">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            Tìm bài nộp
+          </button>
+        </div>
+      </section>
+
+      <section id="examInfoCard" class="glass-card rounded-3xl p-6 mb-8 hidden">
+        <div class="flex items-center gap-2 mb-4">
+          <i data-lucide="file-text" class="w-5 h-5 text-purple-400"></i>
+          <h2 class="text-xl font-bold text-white">Thông tin phòng thi</h2>
+        </div>
+
+        <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div class="info-item">
+            <span class="info-label">Tên bài thi</span>
+            <p id="examNameText" class="info-value"></p>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">Mã phòng</span>
+            <p id="examRoomText" class="info-value"></p>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">Hạn nộp</span>
+            <p id="examDeadlineText" class="info-value"></p>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">Tổng bài nộp</span>
+            <p id="submissionCountText" class="info-value"></p>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <span class="info-label">Mô tả</span>
+          <p id="examDescText" class="text-purple-200/80 text-sm mt-1 leading-relaxed"></p>
+        </div>
+      </section>
+
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="stat-box">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="files" class="w-4 h-4 text-purple-400"></i>
+            <span class="text-xs text-purple-400 font-medium">Tổng bài nộp</span>
+          </div>
+          <p id="totalSubmissionStat" class="text-2xl font-bold text-white">0</p>
+        </div>
+
+        <div class="stat-box">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="users" class="w-4 h-4 text-fuchsia-400"></i>
+            <span class="text-xs text-fuchsia-400 font-medium">Nộp theo nhóm</span>
+          </div>
+          <p id="groupSubmissionStat" class="text-2xl font-bold text-white">0</p>
+        </div>
+
+        <div class="stat-box">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="user" class="w-4 h-4 text-indigo-400"></i>
+            <span class="text-xs text-indigo-400 font-medium">Nộp cá nhân</span>
+          </div>
+          <p id="individualSubmissionStat" class="text-2xl font-bold text-white">0</p>
+        </div>
+      </section>
+
+      <section class="glass-card rounded-3xl p-6">
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="table-2" class="w-5 h-5 text-purple-400"></i>
+            <h2 class="text-xl font-bold text-white">Danh sách bài nộp</h2>
+          </div>
+          <div id="tableSummary" class="text-sm text-purple-300/70">
+            Chưa có dữ liệu
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="submission-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Học sinh / Nhóm</th>
+                <th>Lớp</th>
+                <th>Thành viên</th>
+                <th>Tên file</th>
+                <th>Thời gian nộp</th>
+                <th>Tệp</th>
+              </tr>
+            </thead>
+            <tbody id="submissionTableBody">
+              <tr>
+                <td colspan="7" class="empty-row">Nhập mã phòng để xem danh sách bài nộp.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast-box">
+    <i data-lucide="check" class="w-4 h-4"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../shared/supabase.js"></script>
+  <script src="../../shared/auth-guard.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

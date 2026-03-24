@@ -1,0 +1,219 @@
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  box-sizing: border-box;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.exam-page-bg {
+  background: linear-gradient(160deg, #0f0a1a 0%, #1a0e2e 40%, #110d20 100%);
+}
+
+.exam-header {
+  width: 100%;
+  border-bottom: 1px solid rgba(88, 28, 135, 0.4);
+  background: rgba(15, 10, 30, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.logo-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+}
+
+.top-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  background: rgba(88, 28, 135, 0.16);
+  color: #e9d5ff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.top-action-btn:hover {
+  background: rgba(88, 28, 135, 0.28);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.top-action-btn-danger:hover {
+  background: rgba(220, 38, 38, 0.8);
+}
+
+.title-accent {
+  width: 8px;
+  height: 32px;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, #c084fc, #4f46e5);
+}
+
+.stat-box {
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(88, 28, 135, 0.3);
+  background: rgba(88, 28, 135, 0.12);
+}
+
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(88, 28, 135, 0.2);
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.stat-pulse {
+  animation: pulse-soft 3s ease-in-out infinite;
+}
+
+.feature-card {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid rgba(88, 28, 135, 0.2);
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 2px;
+  background: linear-gradient(135deg, #a855f7, #6d28d9, #4f46e5);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.card-hover:hover .feature-card::before {
+  opacity: 1;
+}
+
+.feature-card-primary {
+  background: linear-gradient(170deg, rgba(88, 28, 135, 0.18) 0%, rgba(20, 12, 40, 0.9) 100%);
+}
+
+.feature-card-secondary {
+  background: linear-gradient(170deg, rgba(147, 51, 234, 0.15) 0%, rgba(20, 12, 40, 0.9) 100%);
+}
+
+.feature-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.feature-icon-primary {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+}
+
+.feature-icon-secondary {
+  background: linear-gradient(135deg, #c084fc, #9333ea);
+}
+
+.feature-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.feature-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.feature-btn-primary {
+  background: linear-gradient(135deg, #9333ea, #6d28d9);
+}
+
+.feature-btn-secondary {
+  background: linear-gradient(135deg, #a855f7, #7e22ce);
+}
+
+.guide-box {
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid rgba(88, 28, 135, 0.2);
+  background: rgba(88, 28, 135, 0.08);
+}
+
+.guide-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.guide-step {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(126, 34, 206, 0.28);
+  color: #d8b4fe;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .top-action-btn {
+    font-size: 13px;
+    padding: 9px 12px;
+  }
+
+  .feature-card {
+    padding: 20px;
+  }
+
+  .guide-box {
+    padding: 20px;
+  }
+}

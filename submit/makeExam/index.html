@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduGame - Tạo phòng thi</title>
+
+  <link rel="icon" type="image/png" href="../../image/logo.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            body: ['"Be Vietnam Pro"', 'sans-serif']
+          },
+          colors: {
+            brand: {
+              50: '#f5f0ff',
+              100: '#ede5ff',
+              200: '#d4c4ff',
+              400: '#9b6dff',
+              500: '#7c3aed',
+              600: '#6d28d9',
+              700: '#5b21b6',
+              800: '#4c1d95',
+              900: '#3b0764'
+            },
+            accent: '#f59e0b'
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen bg-brand-50 overflow-auto font-body">
+  <div id="app-wrapper" class="w-full min-h-screen page-bg">
+    <header class="makeexam-header">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+        <div class="flex items-center gap-3">
+          <div class="brand-logo-box">
+            <span class="text-white font-extrabold text-lg">E</span>
+          </div>
+          <div>
+            <span class="font-bold text-brand-800 text-lg leading-tight block">EduGame</span>
+            <span class="text-xs text-brand-400 font-medium">Quản trị thi</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="backDashboardSubmitBtn" class="top-btn">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Quản trị thi
+          </button>
+
+          <button id="logoutBtn" class="top-btn top-btn-danger">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="p-2.5 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-lg">
+          <i data-lucide="plus-square" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-brand-900">Tạo phòng thi</h1>
+          <p class="text-brand-400 text-sm mt-0.5">
+            Tạo bài thi, thiết lập hạn nộp và sinh mã phòng cho học sinh
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="glass-card rounded-3xl p-6 sm:p-8 fade-in">
+          <div class="flex items-center gap-2 mb-6">
+            <i data-lucide="file-edit" class="w-5 h-5 text-brand-500"></i>
+            <h2 class="font-bold text-brand-800 text-lg">Thông tin bài thi</h2>
+          </div>
+
+          <form id="examForm" class="space-y-5">
+            <div>
+              <label for="examName" class="block text-sm font-semibold text-brand-700 mb-1.5">
+                Tên bài thi <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="examName"
+                type="text"
+                required
+                placeholder="VD: Kiểm tra Toán giữa kỳ"
+                class="form-input"
+              />
+            </div>
+
+            <div>
+              <label for="examDesc" class="block text-sm font-semibold text-brand-700 mb-1.5">
+                Mô tả bài thi
+              </label>
+              <textarea
+                id="examDesc"
+                rows="3"
+                placeholder="Mô tả ngắn về nội dung bài thi..."
+                class="form-input resize-none"
+              ></textarea>
+            </div>
+
+            <div>
+              <label for="examDeadline" class="block text-sm font-semibold text-brand-700 mb-1.5">
+                Hạn nộp bài <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="examDeadline"
+                type="datetime-local"
+                required
+                class="form-input"
+              />
+            </div>
+
+            <button
+              type="submit"
+              id="createBtn"
+              class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-500 to-brand-700 text-white font-bold text-sm glow-btn transition-all flex items-center justify-center gap-2"
+            >
+              <i data-lucide="sparkles" class="w-5 h-5"></i>
+              Tạo phòng thi
+            </button>
+          </form>
+        </div>
+
+        <div id="resultArea" class="fade-in">
+          <div id="previewCard" class="glass-card rounded-3xl p-6 sm:p-8 h-full flex flex-col items-center justify-center text-center">
+            <div class="w-20 h-20 rounded-full bg-brand-100 flex items-center justify-center mb-4">
+              <i data-lucide="monitor" class="w-10 h-10 text-brand-400"></i>
+            </div>
+            <h3 class="font-bold text-brand-700 text-lg mb-1">Xem trước phòng thi</h3>
+            <p class="text-brand-400 text-sm max-w-xs">
+              Điền thông tin bên trái và nhấn “Tạo phòng thi” để sinh mã phòng cho học sinh.
+            </p>
+          </div>
+
+          <div
+            id="resultCard"
+            class="hidden glass-card rounded-3xl p-6 sm:p-8 border-2 border-brand-200"
+            style="background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(237,229,255,0.6));"
+          >
+            <div class="flex items-center gap-2 mb-5">
+              <div class="p-2 rounded-xl bg-green-100">
+                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+              </div>
+              <h3 class="font-bold text-brand-800 text-lg">Phòng thi đã tạo!</h3>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <span class="text-xs font-semibold text-brand-400 uppercase tracking-wide">Tên bài thi</span>
+                <p id="resName" class="font-bold text-brand-900 text-base mt-0.5"></p>
+              </div>
+
+              <div>
+                <span class="text-xs font-semibold text-brand-400 uppercase tracking-wide">Hạn nộp</span>
+                <p id="resDeadline" class="font-semibold text-brand-700 text-sm mt-0.5"></p>
+              </div>
+
+              <div class="result-box">
+                <span class="text-xs font-semibold text-brand-400 uppercase tracking-wide">ID phòng thi</span>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <code id="resId" class="flex-1 text-xl font-extrabold text-brand-700 tracking-widest"></code>
+                  <button id="copyIdBtn" class="copy-btn" title="Sao chép ID">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="result-box">
+                <span class="text-xs font-semibold text-brand-400 uppercase tracking-wide">Link nộp bài</span>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <span id="resLink" class="flex-1 text-sm font-medium text-brand-600 truncate"></span>
+                  <button id="copyLinkBtn" class="copy-btn" title="Sao chép link">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button id="goLeaderboardBtn" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-white font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
+                  <i data-lucide="trophy" class="w-4 h-4"></i>
+                  Bảng xếp hạng
+                </button>
+
+                <button id="createNewRoomBtn" class="flex-1 py-3 rounded-xl border-2 border-brand-300 text-brand-600 font-bold text-sm flex items-center justify-center gap-2 hover:bg-brand-50 transition-all">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  Tạo phòng mới
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+      <h2 class="font-bold text-brand-800 text-lg mb-4 flex items-center gap-2">
+        <i data-lucide="info" class="w-5 h-5 text-brand-400"></i>
+        Hướng dẫn nhanh
+      </h2>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="step-card glass-card rounded-2xl p-5 transition-all duration-300 cursor-default">
+          <div class="step-badge">1</div>
+          <h4 class="font-bold text-brand-800 text-sm mb-1">Nhập thông tin</h4>
+          <p class="text-brand-400 text-xs">Điền tên, mô tả và hạn nộp bài thi.</p>
+        </div>
+
+        <div class="step-card glass-card rounded-2xl p-5 transition-all duration-300 cursor-default">
+          <div class="step-badge">2</div>
+          <h4 class="font-bold text-brand-800 text-sm mb-1">Tạo phòng thi</h4>
+          <p class="text-brand-400 text-xs">Nhấn nút để sinh mã phòng thi tự động.</p>
+        </div>
+
+        <div class="step-card glass-card rounded-2xl p-5 transition-all duration-300 cursor-default">
+          <div class="step-badge">3</div>
+          <h4 class="font-bold text-brand-800 text-sm mb-1">Chia sẻ cho học sinh</h4>
+          <p class="text-brand-400 text-xs">Gửi ID hoặc link nộp bài cho học sinh.</p>
+        </div>
+
+        <div class="step-card glass-card rounded-2xl p-5 transition-all duration-300 cursor-default">
+          <div class="step-badge">4</div>
+          <h4 class="font-bold text-brand-800 text-sm mb-1">Theo dõi kết quả</h4>
+          <p class="text-brand-400 text-xs">Xem bài nộp và bảng xếp hạng.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast-box">
+    <i data-lucide="check" class="w-4 h-4"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../shared/supabase.js"></script>
+  <script src="../../shared/auth-guard.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

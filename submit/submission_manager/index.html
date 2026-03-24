@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduGame - Quản lý bài nộp</title>
+
+  <link rel="icon" type="image/png" href="../../image/logo.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            body: ['"Be Vietnam Pro"', 'sans-serif']
+          },
+          colors: {
+            examBg: '#0f0a1a',
+            examSurface: '#1a0e2e',
+            examPrimary: '#9333ea',
+            examSecondary: '#6366f1'
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen font-body exam-page-bg">
+  <div class="min-h-screen w-full overflow-auto">
+    <header class="exam-header">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+        <div class="flex items-center gap-3">
+          <div class="logo-box">
+            <i data-lucide="folder-open" class="w-5 h-5 text-white"></i>
+          </div>
+          <span class="text-xl font-bold text-white tracking-tight">
+            Edu<span class="text-purple-400">Game</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="backSubmitDashboardBtn" class="top-action-btn">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Quản trị thi
+          </button>
+
+          <button id="logoutBtn" class="top-action-btn top-action-btn-danger">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+      <section class="mb-8">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="title-accent"></div>
+          <h1 class="text-3xl md:text-4xl font-extrabold text-white">
+            Quản lý bài nộp
+          </h1>
+        </div>
+        <p class="text-purple-300/60 text-base ml-5 max-w-2xl">
+          Xem toàn bộ phòng thi và mở danh sách bài nộp của từng phòng trong popup.
+        </p>
+      </section>
+
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="stat-box">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-purple-400"></i>
+            <span class="text-xs text-purple-400 font-medium">Tổng phòng thi</span>
+          </div>
+          <p id="totalExamCount" class="text-2xl font-bold text-white">0</p>
+        </div>
+
+        <div class="stat-box">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="clock-3" class="w-4 h-4 text-fuchsia-400"></i>
+            <span class="text-xs text-fuchsia-400 font-medium">Đang nhận bài</span>
+          </div>
+          <p id="activeExamCount" class="text-2xl font-bold text-white">0</p>
+        </div>
+
+        <div class="stat-box">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="files" class="w-4 h-4 text-indigo-400"></i>
+            <span class="text-xs text-indigo-400 font-medium">Tổng bài nộp</span>
+          </div>
+          <p id="totalSubmissionCount" class="text-2xl font-bold text-white">0</p>
+        </div>
+      </section>
+
+      <section class="glass-card rounded-3xl p-6">
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="table-2" class="w-5 h-5 text-purple-400"></i>
+            <h2 class="text-xl font-bold text-white">Danh sách phòng thi</h2>
+          </div>
+          <div id="examTableSummary" class="text-sm text-purple-300/70">
+            Đang tải dữ liệu...
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="submission-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tên bài thi</th>
+                <th>Mã phòng</th>
+                <th>Hạn nộp</th>
+                <th>Trạng thái</th>
+                <th>Số bài nộp</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="examTableBody">
+              <tr>
+                <td colspan="7" class="empty-row">Đang tải danh sách phòng thi...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="submissionModal" class="modal-overlay hidden">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalTitle" class="text-xl font-bold text-white">Bài nộp của phòng</h3>
+          <p id="modalSubtitle" class="text-sm text-purple-300/70 mt-1"></p>
+        </div>
+        <button id="closeModalBtn" class="close-btn">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="table-wrap">
+          <table class="submission-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Học sinh / Nhóm</th>
+                <th>Lớp</th>
+                <th>Thành viên</th>
+                <th>Tên file</th>
+                <th>Thời gian nộp</th>
+                <th>Tệp</th>
+              </tr>
+            </thead>
+            <tbody id="modalSubmissionTableBody">
+              <tr>
+                <td colspan="7" class="empty-row">Chưa có dữ liệu.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast-box">
+    <i data-lucide="check" class="w-4 h-4"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../shared/supabase.js"></script>
+  <script src="../../shared/auth-guard.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
