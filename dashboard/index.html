@@ -1,125 +1,187 @@
 <!doctype html>
-<html lang="vi">
+<html lang="vi" class="h-full">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard - Kéo Co Trắc Nghiệm</title>
+  <title>EduGame Dashboard</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+
   <link
-    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap"
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="style.css" />
-  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { nunito: ['Nunito', 'sans-serif'] },
+          colors: {
+            deep: '#1a1040',
+            mid: '#2d1b69',
+            accent: '#f59e0b',
+            teal: '#0d9488',
+            surface: '#251660'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="text-center mt-4">
-        <button id="logoutBtn" type="button" class="config-trigger-btn">
-          🚪 Đăng xuất
-        </button>
-      </div>
-  <div id="dashboardApp" class="dashboard-shell">
-    <div class="dashboard-screen">
-      <div class="dashboard-hero text-center mb-12">
-        <h1 class="dashboard-title">
-          🎯 KÉO CO TRẮC NGHIỆM
-        </h1>
-        <p class="dashboard-subtitle">
-          Trả lời đúng để kéo đội bạn về phía chiến thắng!
-        </p>
+
+<body class="h-full font-nunito" style="background: #1a1040;">
+  <div id="app-root" class="h-full w-full overflow-auto relative" style="background: linear-gradient(160deg, #1a1040 0%, #2d1b69 40%, #1a1040 100%);">
+    <div class="glow-orb" style="width:400px;height:400px;background:#7c3aed;top:-100px;left:-100px;"></div>
+    <div class="glow-orb" style="width:300px;height:300px;background:#f59e0b;bottom:10%;right:-50px;"></div>
+    <div class="glow-orb" style="width:250px;height:250px;background:#0d9488;top:50%;left:30%;"></div>
+
+    <header class="relative z-10 px-6 py-5 flex items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #7c3aed, #f59e0b);">
+          <i data-lucide="gamepad-2" style="width:22px;height:22px;color:#fff;"></i>
+        </div>
+        <span class="text-white font-extrabold text-xl tracking-tight">EduGame</span>
       </div>
 
-      <div class="dashboard-grid">
-        <button id="startGameBtn" class="dashboard-card dashboard-card-blue" type="button">
-          <div class="dashboard-card-shine"></div>
-          <div class="dashboard-card-content">
-            <div class="dashboard-icon">▶️</div>
-            <h2 class="dashboard-card-title">Chơi Game</h2>
-            <p class="dashboard-card-desc">
-              Bắt đầu trò chơi kéo co với câu hỏi có sẵn
-            </p>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 bg-white/10 backdrop-blur rounded-full px-4 py-2">
+          <div id="avatar-initial" class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm">
+            U
           </div>
-        </button>
-
-        <button id="goEditorBtn" class="dashboard-card dashboard-card-purple" type="button">
-          <div class="dashboard-card-shine"></div>
-          <div class="dashboard-card-content">
-            <div class="dashboard-icon">✏️</div>
-            <h2 class="dashboard-card-title">Soạn Câu Hỏi</h2>
-            <p class="dashboard-card-desc">
-              Tạo và chỉnh sửa câu hỏi cho trò chơi
-            </p>
-          </div>
-        </button>
-      </div>
-
-      <div class="text-center mt-8">
-        <button id="openConfigBtn" type="button" class="config-trigger-btn">
-          ⚙️ Cấu hình lượt chơi
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Popup cấu hình -->
-  <div id="configModal" class="config-modal hidden">
-    <div class="config-backdrop" id="configBackdrop"></div>
-
-    <div class="config-dialog">
-      <div class="config-header">
-        <h2>⚙️ Cấu hình lượt chơi</h2>
-        <button id="closeConfigBtn" type="button" class="config-close-btn">✕</button>
-      </div>
-      
-      <div class="config-body">
-        <div class="config-field">
-            <label for="teamANameInput">Tên đội Xanh</label>
-            <input
-              id="teamANameInput"
-              type="text"
-              placeholder="ĐỘI XANH"
-            />
-          </div>
-          
-          <div class="config-field">
-            <label for="teamBNameInput">Tên đội Đỏ</label>
-            <input
-              id="teamBNameInput"
-              type="text"
-              placeholder="ĐỘI ĐỎ"
-            />
-          </div>
-        <div class="config-field">
-          <label for="answerTimeInput">Thời gian trả lời mỗi câu (giây)</label>
-          <input id="answerTimeInput" type="number" min="5" max="120" value="15" />
-          <p class="config-hint">Gợi ý: từ 10 đến 30 giây là hợp lý.</p>
+          <span id="user-display" class="text-white/90 text-sm font-semibold hidden sm:inline">
+            Người dùng
+          </span>
         </div>
 
-        <div class="config-field">
-          <label for="winThresholdInput">Chênh lệch điểm để chiến thắng</label>
-          <input id="winThresholdInput" type="number" min="1" max="20" value="4" />
-          <p class="config-hint">Ví dụ: nhập 6 nghĩa là hơn đối thủ 6 điểm sẽ thắng ngay.</p>
-        </div>
-      </div>
-
-      <div class="config-footer">
-        
-        <button id="saveConfigBtn" type="button" class="config-primary-btn">
-          Áp dụng & Chơi
+        <button id="logoutBtn" class="action-btn bg-white/10 hover:bg-red-500/80 text-white/80 hover:text-white rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-1.5 backdrop-blur">
+          <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+          <span class="hidden sm:inline">Đăng xuất</span>
         </button>
       </div>
-    </div>
+    </header>
+
+    <section class="relative z-10 px-6 pt-4 pb-8 max-w-6xl mx-auto">
+      <h1 class="text-3xl sm:text-4xl font-black text-white mb-2">Dashboard quản trị</h1>
+      <p class="text-white/60 text-base sm:text-lg font-medium max-w-xl">
+        Quản lý trò chơi, bộ câu hỏi và các công cụ học tập tại một nơi
+      </p>
+    </section>
+
+    <section class="relative z-10 px-6 pb-8 max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="game-card anim-card rounded-2xl p-6" style="background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(45,27,105,0.6)); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08);">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
+              <i data-lucide="clipboard-list" style="width:28px;height:28px;color:#fff;"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-white font-extrabold text-lg mb-1">Quản lý câu hỏi</h3>
+              <p class="text-white/50 text-sm leading-relaxed mb-4">
+                Tạo, chỉnh sửa và quản lý các bộ câu hỏi trắc nghiệm
+              </p>
+              <button id="questionManagerBtn" class="action-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white" style="background: linear-gradient(135deg, #7c3aed, #6d28d9);">
+                <i data-lucide="folder-open" style="width:16px;height:16px;"></i>
+                Truy cập
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-card anim-card rounded-2xl p-6" style="background: linear-gradient(135deg, rgba(13,148,136,0.25), rgba(45,27,105,0.6)); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08);">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style="background: linear-gradient(135deg, #0d9488, #14b8a6);">
+              <i data-lucide="swords" style="width:28px;height:28px;color:#fff;"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-white font-extrabold text-lg mb-1">Kéo co trắc nghiệm</h3>
+              <p class="text-white/50 text-sm leading-relaxed mb-4">
+                Trò chơi thi đấu 2 đội trả lời câu hỏi để kéo dây về phía chiến thắng
+              </p>
+              <button id="keocoBtn" class="action-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white" style="background: linear-gradient(135deg, #0d9488, #0f766e);">
+                <i data-lucide="play" style="width:16px;height:16px;"></i>
+                Bắt đầu
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-card anim-card rounded-2xl p-6" style="background: linear-gradient(135deg, rgba(220,38,38,0.2), rgba(45,27,105,0.6)); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08);">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style="background: linear-gradient(135deg, #dc2626, #f87171);">
+              <i data-lucide="flag" style="width:28px;height:28px;color:#fff;"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-white font-extrabold text-lg mb-1">Tam quốc diễn nghĩa</h3>
+              <p class="text-white/50 text-sm leading-relaxed mb-4">
+                Trò chơi 3 đội thi đấu realtime, học sinh tham gia bằng điện thoại theo mã phòng
+              </p>
+              <button id="tamquocBtn" class="action-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white" style="background: linear-gradient(135deg, #dc2626, #b91c1c);">
+                <i data-lucide="play" style="width:16px;height:16px;"></i>
+                Bắt đầu
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-card anim-card featured-card rounded-2xl p-6" style="background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(45,27,105,0.6)); backdrop-filter: blur(10px); border: 1px solid rgba(245,158,11,0.3);">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+              <i data-lucide="check-circle" style="width:28px;height:28px;color:#fff;"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-white font-extrabold text-lg mb-1">Chấm bài</h3>
+              <p class="text-white/50 text-sm leading-relaxed mb-4">
+                Hỗ trợ chấm bài, tổng hợp kết quả, quản lý điểm số và theo dõi tiến độ học sinh
+              </p>
+              <button id="gradingBtn" class="action-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <i data-lucide="external-link" style="width:16px;height:16px;"></i>
+                Mở
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="relative z-10 px-6 pb-10 max-w-6xl mx-auto">
+      <h2 class="text-white/40 text-xs font-bold uppercase tracking-widest mb-4">Thống kê nhanh</h2>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="stat-card rounded-xl p-4 text-center" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06);">
+          <div class="flex justify-center mb-2">
+            <i data-lucide="database" style="width:20px;height:20px;color:#a78bfa;"></i>
+          </div>
+          <div id="quizCount" class="text-2xl font-black text-white">0</div>
+          <div class="text-white/40 text-xs font-semibold mt-1">Bộ câu hỏi</div>
+        </div>
+
+        <div class="stat-card rounded-xl p-4 text-center" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06);">
+          <div class="flex justify-center mb-2">
+            <i data-lucide="gamepad-2" style="width:20px;height:20px;color:#14b8a6;"></i>
+          </div>
+          <div class="text-2xl font-black text-white">3</div>
+          <div class="text-white/40 text-xs font-semibold mt-1">Chức năng</div>
+        </div>
+
+        <div class="stat-card rounded-xl p-4 text-center" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06);">
+          <div class="flex justify-center mb-2">
+            <i data-lucide="file-check" style="width:20px;height:20px;color:#fbbf24;"></i>
+          </div>
+          <div class="text-2xl font-black text-white">0</div>
+          <div class="text-white/40 text-xs font-semibold mt-1">Bài đã chấm</div>
+        </div>
+      </div>
+    </section>
   </div>
-  <footer class="dashboard-footer">
-    © 2026 Nguyễn Đăng Trường • Kéo Co Trắc Nghiệm
-  </footer>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../shared/supabase.js"></script>
   <script src="../shared/auth-guard.js"></script>
   <script src="script.js"></script>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    lucide.createIcons();
+  </script>
 </body>
 </html>

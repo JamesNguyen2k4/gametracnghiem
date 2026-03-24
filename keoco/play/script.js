@@ -929,7 +929,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (backDashboardBtn) {
     backDashboardBtn.addEventListener("click", () => {
-      window.location.href = "../dashboard/index.html";
+      window.location.href = "../dashboard_keoco/index.html";
     });
   }
 

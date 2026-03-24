@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Kéo Co Trắc Nghiệm</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+  
+</head>
+<body>
+  <div class="back-dashboard-wrap">
+    <button id="backMainDashboardBtn" type="button" class="back-dashboard-btn">
+      ← Về Dashboard
+    </button>
+  </div>
+  <div id="dashboardApp" class="dashboard-shell">
+    <div class="dashboard-screen">
+      <div class="dashboard-hero text-center mb-12">
+        <h1 class="dashboard-title">
+          🎯 KÉO CO TRẮC NGHIỆM
+        </h1>
+        <p class="dashboard-subtitle">
+          Trả lời đúng để kéo đội bạn về phía chiến thắng!
+        </p>
+      </div>
+
+      <div class="dashboard-grid">
+        <button id="startGameBtn" class="dashboard-card dashboard-card-blue" type="button">
+          <div class="dashboard-card-shine"></div>
+          <div class="dashboard-card-content">
+            <div class="dashboard-icon">▶️</div>
+            <h2 class="dashboard-card-title">Chơi Game</h2>
+            <p class="dashboard-card-desc">
+              Bắt đầu trò chơi kéo co với câu hỏi có sẵn
+            </p>
+          </div>
+        </button>
+
+      </div>
+
+      <div class="text-center mt-8">
+        <button id="openConfigBtn" type="button" class="config-trigger-btn">
+          ⚙️ Cấu hình lượt chơi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup cấu hình -->
+  <div id="configModal" class="config-modal hidden">
+    <div class="config-backdrop" id="configBackdrop"></div>
+
+    <div class="config-dialog">
+      <div class="config-header">
+        <h2>⚙️ Cấu hình lượt chơi</h2>
+        <button id="closeConfigBtn" type="button" class="config-close-btn">✕</button>
+      </div>
+      
+      <div class="config-body">
+        <div class="config-field">
+            <label for="teamANameInput">Tên đội Xanh</label>
+            <input
+              id="teamANameInput"
+              type="text"
+              placeholder="ĐỘI XANH"
+            />
+          </div>
+          
+          <div class="config-field">
+            <label for="teamBNameInput">Tên đội Đỏ</label>
+            <input
+              id="teamBNameInput"
+              type="text"
+              placeholder="ĐỘI ĐỎ"
+            />
+          </div>
+        <div class="config-field">
+          <label for="answerTimeInput">Thời gian trả lời mỗi câu (giây)</label>
+          <input id="answerTimeInput" type="number" min="5" max="120" value="15" />
+          <p class="config-hint">Gợi ý: từ 10 đến 30 giây là hợp lý.</p>
+        </div>
+
+        <div class="config-field">
+          <label for="winThresholdInput">Chênh lệch điểm để chiến thắng</label>
+          <input id="winThresholdInput" type="number" min="1" max="20" value="4" />
+          <p class="config-hint">Ví dụ: nhập 6 nghĩa là hơn đối thủ 6 điểm sẽ thắng ngay.</p>
+        </div>
+      </div>
+
+      <div class="config-footer">
+        
+        <button id="saveConfigBtn" type="button" class="config-primary-btn">
+          Áp dụng & Chơi
+        </button>
+      </div>
+    </div>
+  </div>
+  <footer class="dashboard-footer">
+    © 2026 Nguyễn Đăng Trường • Kéo Co Trắc Nghiệm
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../shared/supabase.js"></script>
+  <script src="../../shared/auth-guard.js"></script>
+  <script src="script.js"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+</body>
+</html>

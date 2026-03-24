@@ -1,107 +1,4 @@
-const DEFAULT_GAME_CONFIG = {
-    answerTime: 15,
-    winThreshold: 4,
-    teamAName: "ĐỘI XANH",
-    teamBName: "ĐỘI ĐỎ"
-  };
-  
-  let currentConfig = { ...DEFAULT_GAME_CONFIG };
-  
-  function buildPlayUrl() {
-    const params = new URLSearchParams({
-      answerTime: String(currentConfig.answerTime),
-      winThreshold: String(currentConfig.winThreshold),
-      teamAName: currentConfig.teamAName,
-      teamBName: currentConfig.teamBName
-    });
-  
-    return `../play/index.html?${params.toString()}`;
-  }
-  
-  function startGame() {
-    window.location.href = buildPlayUrl();
-  }
-  
-  function goToEditor() {
-    window.location.href = "../question/index.html";
-  }
-  
-  function openConfigModal() {
-    const modal = document.getElementById("configModal");
-    const answerTimeInput = document.getElementById("answerTimeInput");
-    const winThresholdInput = document.getElementById("winThresholdInput");
-    const teamANameInput = document.getElementById("teamANameInput");
-    const teamBNameInput = document.getElementById("teamBNameInput");
-  
-    if (answerTimeInput) {
-      answerTimeInput.value = currentConfig.answerTime;
-    }
-  
-    if (winThresholdInput) {
-      winThresholdInput.value = currentConfig.winThreshold;
-    }
-  
-    if (teamANameInput) {
-      teamANameInput.value = currentConfig.teamAName;
-    }
-  
-    if (teamBNameInput) {
-      teamBNameInput.value = currentConfig.teamBName;
-    }
-  
-    modal?.classList.remove("hidden");
-  }
-  
-  function closeConfigModal() {
-    const modal = document.getElementById("configModal");
-    modal?.classList.add("hidden");
-  }
-  
-  function clampNumber(value, min, max, fallback) {
-    const num = Number(value);
-    if (Number.isNaN(num)) return fallback;
-    return Math.min(max, Math.max(min, num));
-  }
-  
-  function normalizeTeamName(value, fallback) {
-    const text = String(value || "").trim();
-    return text || fallback;
-  }
-  
-  function saveConfigAndStart() {
-    const answerTimeInput = document.getElementById("answerTimeInput");
-    const winThresholdInput = document.getElementById("winThresholdInput");
-    const teamANameInput = document.getElementById("teamANameInput");
-    const teamBNameInput = document.getElementById("teamBNameInput");
-  
-    currentConfig = {
-      answerTime: clampNumber(
-        answerTimeInput?.value,
-        5,
-        120,
-        DEFAULT_GAME_CONFIG.answerTime
-      ),
-      winThreshold: clampNumber(
-        winThresholdInput?.value,
-        1,
-        20,
-        DEFAULT_GAME_CONFIG.winThreshold
-      ),
-      teamAName: normalizeTeamName(
-        teamANameInput?.value,
-        DEFAULT_GAME_CONFIG.teamAName
-      ),
-      teamBName: normalizeTeamName(
-        teamBNameInput?.value,
-        DEFAULT_GAME_CONFIG.teamBName
-      )
-    };
-  
-    closeConfigModal();
-    startGame();
-  }
-  
-  async function handleLogout() {
+async function handleLogout() {
     try {
       if (!window.supabaseClient) {
         throw new Error("Thiếu supabaseClient.");
@@ -115,49 +12,94 @@ const DEFAULT_GAME_CONFIG = {
     }
   }
   
+  function goToQuestionManager() {
+    window.location.href = "../question/index.html";
+  }
+  
+  function goToKeoco() {
+    window.location.href = "../keoco/dashboard_keoco/index.html";
+    // nếu sau này chuyển vào list_play thì sửa thành:
+    // window.location.href = "../list_play/keoco/dashboard_keoco/index.html";
+  }
+  
+  function goToTamquoc() {
+    alert("Mục Tam quốc diễn nghĩa đang được phát triển.");
+    // sau này dùng:
+    // window.location.href = "../list_play/tamquoc/dashboard_tamquoc/index.html";
+  }
+  
+  function goToGrading() {
+    alert("Mục Chấm bài đang được phát triển.");
+  }
+  
+  async function loadUserInfo(user) {
+    const userDisplay = document.getElementById("user-display");
+    const avatarInitial = document.getElementById("avatar-initial");
+  
+    const email = user?.email || "Người dùng";
+    const displayName =
+      user?.user_metadata?.display_name ||
+      user?.user_metadata?.full_name ||
+      email;
+  
+    if (userDisplay) {
+      userDisplay.textContent = displayName;
+    }
+  
+    if (avatarInitial) {
+      avatarInitial.textContent = displayName.trim().charAt(0).toUpperCase();
+    }
+  }
+  
+  async function loadQuizCount(user) {
+    const quizCountEl = document.getElementById("quizCount");
+    if (!quizCountEl || !window.supabaseClient || !user?.id) return;
+  
+    try {
+      const { count, error } = await window.supabaseClient
+        .from("quizzes")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+  
+      if (error) throw error;
+  
+      quizCountEl.textContent = count ?? 0;
+    } catch (error) {
+      console.error("loadQuizCount error:", error);
+      quizCountEl.textContent = "0";
+    }
+  }
+  
   document.addEventListener("DOMContentLoaded", async () => {
     const user = await requireAuthOrRedirect();
     if (!user) return;
   
-    const startGameBtn = document.getElementById("startGameBtn");
-    const goEditorBtn = document.getElementById("goEditorBtn");
-    const openConfigBtn = document.getElementById("openConfigBtn");
-    const closeConfigBtn = document.getElementById("closeConfigBtn");
-    const configBackdrop = document.getElementById("configBackdrop");
-    const saveConfigBtn = document.getElementById("saveConfigBtn");
+    await loadUserInfo(user);
+    await loadQuizCount(user);
+  
     const logoutBtn = document.getElementById("logoutBtn");
-  
-    if (startGameBtn) {
-      startGameBtn.addEventListener("click", startGame);
-    }
-  
-    if (goEditorBtn) {
-      goEditorBtn.addEventListener("click", goToEditor);
-    }
-  
-    if (openConfigBtn) {
-      openConfigBtn.addEventListener("click", openConfigModal);
-    }
-  
-    if (closeConfigBtn) {
-      closeConfigBtn.addEventListener("click", closeConfigModal);
-    }
-  
-    if (configBackdrop) {
-      configBackdrop.addEventListener("click", closeConfigModal);
-    }
-  
-    if (saveConfigBtn) {
-      saveConfigBtn.addEventListener("click", saveConfigAndStart);
-    }
+    const questionManagerBtn = document.getElementById("questionManagerBtn");
+    const keocoBtn = document.getElementById("keocoBtn");
+    const tamquocBtn = document.getElementById("tamquocBtn");
+    const gradingBtn = document.getElementById("gradingBtn");
   
     if (logoutBtn) {
       logoutBtn.addEventListener("click", handleLogout);
     }
   
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        closeConfigModal();
-      }
-    });
+    if (questionManagerBtn) {
+      questionManagerBtn.addEventListener("click", goToQuestionManager);
+    }
+  
+    if (keocoBtn) {
+      keocoBtn.addEventListener("click", goToKeoco);
+    }
+  
+    if (tamquocBtn) {
+      tamquocBtn.addEventListener("click", goToTamquoc);
+    }
+  
+    if (gradingBtn) {
+      gradingBtn.addEventListener("click", goToGrading);
+    }
   });
