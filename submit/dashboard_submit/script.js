@@ -21,7 +21,14 @@ async function handleLogout() {
   }
   
   function goToRanking() {
-    window.location.href = "../ranking/index.html";
+    const roomId = window.prompt("Nhập mã phòng để xem bảng xếp hạng:");
+  
+    if (!roomId) return;
+  
+    const normalizedRoomId = roomId.trim();
+    if (!normalizedRoomId) return;
+  
+    window.location.href = `../ranking/index.html?roomId=${encodeURIComponent(normalizedRoomId)}`;
   }
   
   async function loadExamStats(user) {

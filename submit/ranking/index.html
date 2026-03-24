@@ -1,13 +1,11 @@
 <!doctype html>
-<html lang="vi">
+<html lang="vi" class="h-full">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EduGame - Quản lý bài nộp</title>
+  <title>EduGame - Bảng xếp hạng</title>
 
   <link rel="icon" type="image/png" href="../../image/logo.ico" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
@@ -15,19 +13,38 @@
 
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            body: ['"Be Vietnam Pro"', 'sans-serif']
+            main: ['Be Vietnam Pro', 'sans-serif']
           },
           colors: {
-            examBg: '#0f0a1a',
-            examSurface: '#1a0e2e',
-            examPrimary: '#9333ea',
-            examSecondary: '#6366f1'
+            brand: {
+              50: '#f5f0ff',
+              100: '#ede5ff',
+              200: '#d4c4ff',
+              300: '#b899ff',
+              400: '#9b6dff',
+              500: '#7c3aed',
+              600: '#6d28d9',
+              700: '#5b21b6',
+              800: '#4c1d95',
+              900: '#3b0764'
+            },
+            accent: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706'
+            },
+            mint: {
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669'
+            }
           }
         }
       }
@@ -36,175 +53,196 @@
 
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="min-h-screen font-body exam-page-bg">
-  <div class="min-h-screen w-full overflow-auto">
-    <header class="exam-header">
-      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+<body class="h-full bg-gray-50 font-main">
+  <div class="app-wrap w-full">
+    <header class="page-header">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
         <div class="flex items-center gap-3">
-          <div class="logo-box">
-            <i data-lucide="folder-open" class="w-5 h-5 text-white"></i>
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <i data-lucide="trophy" class="w-5 h-5 text-white"></i>
           </div>
-          <span class="text-xl font-bold text-white tracking-tight">
-            Edu<span class="text-purple-400">Game</span>
-          </span>
+          <div>
+            <div class="text-white font-bold text-xl tracking-tight">EduGame</div>
+            <div class="text-white/70 text-xs">Bảng xếp hạng bài nộp</div>
+          </div>
         </div>
 
         <div class="flex items-center gap-3">
-          <button id="backSubmitDashboardBtn" class="top-action-btn">
+          <button id="backDashboardBtn" class="top-btn">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            Quản trị thi
+            <span class="hidden sm:inline">Quản trị thi</span>
           </button>
 
-          <button id="logoutBtn" class="top-action-btn top-action-btn-danger">
+          <button id="logoutBtn" class="top-btn top-btn-danger">
             <i data-lucide="log-out" class="w-4 h-4"></i>
-            Đăng xuất
+            <span class="hidden sm:inline">Đăng xuất</span>
           </button>
         </div>
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-10">
-      <section class="mb-8">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="title-accent"></div>
-          <h1 class="text-3xl md:text-4xl font-extrabold text-white">
-            Quản lý bài nộp
-          </h1>
-        </div>
-        <p class="text-purple-300/60 text-base ml-5 max-w-2xl">
-          Tìm theo mã phòng để xem danh sách bài nộp, tải file và theo dõi thời gian nộp của học sinh.
-        </p>
-      </section>
-
-      <section class="glass-card rounded-3xl p-6 mb-8">
-        <div class="grid lg:grid-cols-[1fr_auto_auto] gap-4 items-end">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-8">
+      <section class="anim-in">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div>
-            <label for="roomIdInput" class="block text-sm font-semibold text-purple-200 mb-2">
-              Mã phòng thi
-            </label>
-            <input
-              id="roomIdInput"
-              type="text"
-              placeholder="Nhập mã phòng, ví dụ: ABC123"
-              class="manager-input uppercase"
-            />
+            <h1 id="pageTitle" class="text-2xl sm:text-3xl font-extrabold text-brand-900 flex items-center gap-2">
+              <i data-lucide="bar-chart-3" class="w-7 h-7 text-accent-500"></i>
+              Bảng xếp hạng
+            </h1>
+
+            <p id="roomDesc" class="text-brand-700 mt-1 text-sm">
+              Đang tải thông tin phòng thi...
+            </p>
+
+            <div class="flex flex-wrap items-center gap-2 mt-3">
+              <span id="roomIdBadge" class="badge bg-brand-100 text-brand-700">
+                <i data-lucide="hash" class="w-3 h-3"></i>
+                Room ID: --
+              </span>
+
+              <span id="deadlineBadge" class="badge bg-accent-400/20 text-accent-600">
+                <i data-lucide="clock-3" class="w-3 h-3"></i>
+                Hạn nộp: --
+              </span>
+            </div>
           </div>
 
-          <div>
-            <label for="sortSelect" class="block text-sm font-semibold text-purple-200 mb-2">
-              Sắp xếp
-            </label>
-            <select id="sortSelect" class="manager-input">
-              <option value="asc">Nộp sớm nhất</option>
-              <option value="desc">Nộp muộn nhất</option>
-            </select>
-          </div>
+          <div class="flex items-center gap-3">
+            <button id="refreshBtn" class="btn-primary flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              Làm mới
+            </button>
 
-          <button id="searchBtn" class="primary-btn h-[48px]">
-            <i data-lucide="search" class="w-4 h-4"></i>
-            Tìm bài nộp
-          </button>
+            <button id="exportExcelBtn" class="btn-primary flex items-center gap-2 bg-mint-500 hover:bg-mint-600 text-white font-semibold px-4 py-2.5 rounded-xl text-sm">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+              Xuất Excel
+            </button>
+          </div>
         </div>
       </section>
 
-      <section id="examInfoCard" class="glass-card rounded-3xl p-6 mb-8 hidden">
-        <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="file-text" class="w-5 h-5 text-purple-400"></i>
-          <h2 class="text-xl font-bold text-white">Thông tin phòng thi</h2>
-        </div>
-
-        <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div class="info-item">
-            <span class="info-label">Tên bài thi</span>
-            <p id="examNameText" class="info-value"></p>
+      <section class="py-5">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div class="stat-card glass-card rounded-2xl p-4 anim-in anim-d1">
+            <div class="flex items-center gap-2 text-brand-500 mb-1">
+              <i data-lucide="files" class="w-4 h-4"></i>
+              <span class="text-xs font-semibold uppercase tracking-wide">Tổng nộp</span>
+            </div>
+            <p id="totalSubmissionsEl" class="text-2xl font-extrabold text-brand-900">0</p>
           </div>
 
-          <div class="info-item">
-            <span class="info-label">Mã phòng</span>
-            <p id="examRoomText" class="info-value"></p>
+          <div class="stat-card glass-card rounded-2xl p-4 anim-in anim-d2">
+            <div class="flex items-center gap-2 text-mint-500 mb-1">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+              <span class="text-xs font-semibold uppercase tracking-wide">Đúng hạn</span>
+            </div>
+            <p id="onTimeEl" class="text-2xl font-extrabold text-green-700">0</p>
           </div>
 
-          <div class="info-item">
-            <span class="info-label">Hạn nộp</span>
-            <p id="examDeadlineText" class="info-value"></p>
+          <div class="stat-card glass-card rounded-2xl p-4 anim-in anim-d3">
+            <div class="flex items-center gap-2 text-red-400 mb-1">
+              <i data-lucide="alert-circle" class="w-4 h-4"></i>
+              <span class="text-xs font-semibold uppercase tracking-wide">Nộp muộn</span>
+            </div>
+            <p id="lateEl" class="text-2xl font-extrabold text-red-600">0</p>
           </div>
 
-          <div class="info-item">
-            <span class="info-label">Tổng bài nộp</span>
-            <p id="submissionCountText" class="info-value"></p>
+          <div class="stat-card glass-card rounded-2xl p-4 anim-in anim-d4">
+            <div class="flex items-center gap-2 text-accent-500 mb-1">
+              <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+              <span class="text-xs font-semibold uppercase tracking-wide">Điểm TB</span>
+            </div>
+            <p id="avgScoreEl" class="text-2xl font-extrabold text-brand-900">--</p>
           </div>
-        </div>
 
-        <div class="mt-4">
-          <span class="info-label">Mô tả</span>
-          <p id="examDescText" class="text-purple-200/80 text-sm mt-1 leading-relaxed"></p>
+          <div class="stat-card glass-card rounded-2xl p-4 anim-in anim-d5 col-span-2 sm:col-span-1">
+            <div class="flex items-center gap-2 text-accent-500 mb-1">
+              <i data-lucide="crown" class="w-4 h-4"></i>
+              <span class="text-xs font-semibold uppercase tracking-wide">Top 1</span>
+            </div>
+            <p id="topOneEl" class="text-lg font-extrabold text-brand-900 truncate">--</p>
+          </div>
         </div>
       </section>
 
-      <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div class="stat-box">
-          <div class="flex items-center gap-2 mb-2">
-            <i data-lucide="files" class="w-4 h-4 text-purple-400"></i>
-            <span class="text-xs text-purple-400 font-medium">Tổng bài nộp</span>
+      <section class="pb-5 anim-in anim-d3">
+        <div class="glass-card rounded-2xl p-5 sm:p-6">
+          <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <h2 class="text-lg font-bold text-brand-900 flex items-center gap-2">
+              <i data-lucide="bar-chart-2" class="w-5 h-5 text-brand-500"></i>
+              Top 5 nộp bài nhanh nhất
+            </h2>
+            <p class="text-xs text-brand-500">
+              Xếp theo thời gian nộp sớm nhất trong phòng
+            </p>
           </div>
-          <p id="totalSubmissionStat" class="text-2xl font-bold text-white">0</p>
-        </div>
 
-        <div class="stat-box">
-          <div class="flex items-center gap-2 mb-2">
-            <i data-lucide="users" class="w-4 h-4 text-fuchsia-400"></i>
-            <span class="text-xs text-fuchsia-400 font-medium">Nộp theo nhóm</span>
+          <div id="chartEmpty" class="hidden text-sm text-brand-500 py-10 text-center">
+            Chưa có dữ liệu để hiển thị biểu đồ.
           </div>
-          <p id="groupSubmissionStat" class="text-2xl font-bold text-white">0</p>
-        </div>
 
-        <div class="stat-box">
-          <div class="flex items-center gap-2 mb-2">
-            <i data-lucide="user" class="w-4 h-4 text-indigo-400"></i>
-            <span class="text-xs text-indigo-400 font-medium">Nộp cá nhân</span>
+          <div id="chartWrap">
+            <div id="chartArea" class="chart-area"></div>
           </div>
-          <p id="individualSubmissionStat" class="text-2xl font-bold text-white">0</p>
         </div>
       </section>
 
-      <section class="glass-card rounded-3xl p-6">
-        <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
-          <div class="flex items-center gap-2">
-            <i data-lucide="table-2" class="w-5 h-5 text-purple-400"></i>
-            <h2 class="text-xl font-bold text-white">Danh sách bài nộp</h2>
+      <section class="pb-5 anim-in anim-d4">
+        <div class="glass-card rounded-2xl p-5 sm:p-6 overflow-x-auto">
+          <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <h2 class="text-lg font-bold text-brand-900 flex items-center gap-2">
+              <i data-lucide="list-ordered" class="w-5 h-5 text-brand-500"></i>
+              Danh sách bài nộp
+            </h2>
+            <span id="tableSummary" class="text-xs text-brand-500">0 bài nộp</span>
           </div>
-          <div id="tableSummary" class="text-sm text-purple-300/70">
-            Chưa có dữ liệu
-          </div>
-        </div>
 
-        <div class="table-wrap">
-          <table class="submission-table">
+          <table class="w-full text-sm min-w-[940px]">
             <thead>
-              <tr>
-                <th>#</th>
-                <th>Học sinh / Nhóm</th>
-                <th>Lớp</th>
-                <th>Thành viên</th>
-                <th>Tên file</th>
-                <th>Thời gian nộp</th>
-                <th>Tệp</th>
+              <tr class="text-left text-brand-500 text-xs uppercase tracking-wider border-b border-brand-100">
+                <th class="pb-3 pl-3 w-16">#</th>
+                <th class="pb-3">Tên nhóm</th>
+                <th class="pb-3">Thành viên</th>
+                <th class="pb-3">Thời gian</th>
+                <th class="pb-3">Trạng thái</th>
+                <th class="pb-3 w-28">Điểm</th>
+                <th class="pb-3 w-28">Thao tác</th>
               </tr>
             </thead>
-            <tbody id="submissionTableBody">
-              <tr>
-                <td colspan="7" class="empty-row">Nhập mã phòng để xem danh sách bài nộp.</td>
-              </tr>
-            </tbody>
+            <tbody id="rankingBody"></tbody>
           </table>
+
+          <div id="tableEmpty" class="hidden text-center text-sm text-brand-500 py-10">
+            Chưa có bài nộp nào trong phòng thi này.
+          </div>
+        </div>
+      </section>
+
+      <section class="anim-in anim-d5">
+        <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 export-box">
+          <div>
+            <h3 class="font-bold text-brand-900 flex items-center gap-2">
+              <i data-lucide="download" class="w-5 h-5 text-mint-500"></i>
+              Trích xuất Excel theo thành viên
+            </h3>
+            <p class="text-brand-600 text-sm mt-1">
+              File xuất gồm 2 cột:
+              <strong>Họ tên học sinh</strong> và
+              <strong>Số điểm tương ứng của nhóm</strong>.
+            </p>
+          </div>
+
+          <button id="exportExcelBtnBottom" class="btn-primary flex items-center gap-2 bg-mint-500 hover:bg-mint-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm shrink-0">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Xuất Excel
+          </button>
         </div>
       </section>
     </main>
   </div>
 
-  <div id="toast" class="toast-box">
-    <i data-lucide="check" class="w-4 h-4"></i>
-    <span id="toastMsg"></span>
+  <div id="toast" class="toast">
+    <div id="toastMsg" class="toast-msg">...</div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
