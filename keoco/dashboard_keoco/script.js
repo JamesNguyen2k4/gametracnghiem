@@ -3,6 +3,7 @@ const DEFAULT_GAME_CONFIG = {
     winThreshold: 4,
     teamAName: "ĐỘI XANH",
     teamBName: "ĐỘI ĐỎ"
+    
   };
   
   let currentConfig = { ...DEFAULT_GAME_CONFIG };

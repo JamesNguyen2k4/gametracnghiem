@@ -23,6 +23,8 @@ let teamATimer = null;
 let teamBTimer = null;
 let teamATimeLeft = ANSWER_TIME;
 let teamBTimeLeft = ANSWER_TIME;
+let teamAFrozen = false;
+let teamBFrozen = false;
 let gameStarted = false;
 let gamePaused = true;
 //const SUPABASE_URL = "https://izjtgtgnyedmdzmljbte.supabase.co";
@@ -97,7 +99,21 @@ async function getAccessToken() {
 
   return session.access_token;
 }
+function setFrozenState(team, value) {
+  if (team === "A") {
+    teamAFrozen = value;
+  } else {
+    teamBFrozen = value;
+  }
+}
 
+function isTeamFrozen(team) {
+  return team === "A" ? teamAFrozen : teamBFrozen;
+}
+
+function getOpponentTeam(team) {
+  return team === "A" ? "B" : "A";
+}
 async function supabaseFetch(path, options = {}) {
   const accessToken = await getAccessToken();
 
@@ -640,11 +656,19 @@ function showTeamStatus(team, isCorrect) {
 // ========================================
 // XỬ LÝ TRẢ LỜI CHUNG
 // ========================================
+function showFrozenStatus(team) {
+  const statusEl = document.getElementById(`team${team}Status`);
+  if (!statusEl) return;
+
+  const opponent = getOpponentTeam(team);
+  statusEl.textContent = `🧊 BỊ ĐÓNG BĂNG - CHỜ ĐỘI ${opponent} HOÀN THÀNH 1 CÂU`;
+  statusEl.style.opacity = "1";
+}
 function submitAnswer(team, selectedIndex, source = "unknown") {
   if (gameEnded) return;
   if (gamePaused) return;
+  if (isTeamFrozen(team)) return;
   if (isTeamAnswered(team)) return;
-
   const questions = getQuestionsByTeam(team);
   const index = getCurrentQuestionIndex(team);
   const q = questions[index];
@@ -663,7 +687,15 @@ function submitAnswer(team, selectedIndex, source = "unknown") {
   if (isCorrect) {
     incrementTeamScore(team);
   }
-
+  const opponentTeam = getOpponentTeam(team);
+  const opponentStillBusy =
+    getCurrentQuestionIndex(opponentTeam) < getQuestionsByTeam(opponentTeam).length &&
+    !isTeamAnswered(opponentTeam);
+  
+  if (!isCorrect && opponentStillBusy) {
+    setFrozenState(team, true);
+    showFrozenStatus(team);
+  }
   updateTugOfWar();
 
   const scoreDiff = Math.abs(teamAScore - teamBScore);
@@ -707,6 +739,13 @@ function submitAnswer(team, selectedIndex, source = "unknown") {
   }
 
   setTimeout(() => {
+    unfreezeOpponentIfNeeded(team);
+    if (isTeamFrozen(team)) {
+      setTimeLeftByTeam(team, ANSWER_TIME);
+      renderQuestionPaused(team);
+      return;
+    }
+  
     advanceQuestion(team);
     setTimeLeftByTeam(team, ANSWER_TIME);
     renderQuestion(team);
@@ -716,7 +755,16 @@ function submitAnswer(team, selectedIndex, source = "unknown") {
 function handleAnswer(team, selectedIndex) {
   submitAnswer(team, selectedIndex, "legacy");
 }
+function unfreezeOpponentIfNeeded(teamJustFinished) {
+  const frozenTeam = getOpponentTeam(teamJustFinished);
 
+  if (!isTeamFrozen(frozenTeam)) return;
+
+  setFrozenState(frozenTeam, false);
+  advanceQuestion(frozenTeam);
+  setTimeLeftByTeam(frozenTeam, ANSWER_TIME);
+  renderQuestion(frozenTeam);
+}
 // ========================================
 // ANIMATION KÉO CO
 // ========================================
@@ -847,9 +895,15 @@ function renderQuestionPaused(team) {
   questionEl.textContent = q.question;
   progressEl.textContent = `Câu: ${index + 1}/${questions.length}`;
 
+  const pausedMessage = isTeamFrozen(team)
+  ? "🧊 Đội này đang bị đóng băng, chờ đội bên kia hoàn thành 1 câu"
+  : gameStarted
+    ? "⏸️ Trò chơi đang tạm dừng"
+    : "▶️ Nhấn Bắt đầu để chơi";
+
   optionsEl.innerHTML = `
     <div class="col-span-2 text-center text-white font-semibold bg-black/20 rounded-xl p-4 border border-white/10">
-      ${gameStarted ? "⏸️ Trò chơi đang tạm dừng" : "▶️ Nhấn Bắt đầu để chơi"}
+      ${pausedMessage}
     </div>
   `;
 }
@@ -862,7 +916,8 @@ function resetGame(autoStart = false) {
 
   teamAAnswered = false;
   teamBAnswered = false;
-
+  teamAFrozen = false;
+  teamBFrozen = false;
   gameStarted = autoStart;
   gamePaused = !autoStart;
 
