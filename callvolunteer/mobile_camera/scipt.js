@@ -26,6 +26,7 @@ const state = {
 
 function setMobileStatus(text) {
   refs.status.textContent = text;
+  console.log("[mobile status]", text);
 }
 
 function getSessionId() {
@@ -34,19 +35,31 @@ function getSessionId() {
 }
 
 async function startPhoneCamera() {
+  if (!window.isSecureContext) {
+    throw new Error("Trang này chưa chạy trong HTTPS hoặc secure context.");
+  }
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error("Trình duyệt không hỗ trợ truy cập camera.");
+  }
+
   if (state.stream) {
     state.stream.getTracks().forEach((track) => track.stop());
     state.stream = null;
   }
 
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: state.facingMode },
+    video: {
+      facingMode: state.facingMode
+    },
     audio: false
   });
 
   state.stream = stream;
   refs.preview.srcObject = stream;
   await refs.preview.play();
+
+  setMobileStatus("Camera đã bật");
 }
 
 async function ensurePeerConnection() {
@@ -86,7 +99,8 @@ async function handlePhoneSignal(message) {
       await addIceCandidate(state.peer, message.payload.candidate);
     }
   } catch (error) {
-    setMobileStatus(`Lỗi kết nối: ${error.message}`);
+    console.error("handlePhoneSignal error:", error);
+    setMobileStatus(`Lỗi signaling: ${error.message}`);
   }
 }
 
@@ -95,7 +109,14 @@ async function initPhoneConnection() {
   refs.sessionText.textContent = state.sessionId || "----";
 
   if (!state.sessionId) {
-    setMobileStatus("Thiếu mã phiên kết nối");
+    setMobileStatus("Thiếu mã phiên. Hãy mở đúng link từ máy tính.");
+    refs.startBtn.disabled = true;
+    refs.switchBtn.disabled = true;
+    return;
+  }
+
+  if (!window.supabaseClient) {
+    setMobileStatus("Thiếu cấu hình Supabase trên điện thoại.");
     refs.startBtn.disabled = true;
     refs.switchBtn.disabled = true;
     return;
@@ -108,7 +129,7 @@ async function initPhoneConnection() {
   );
 
   await state.signaling.subscribe();
-  setMobileStatus("Đã sẵn sàng, hãy bật camera");
+  setMobileStatus("Đã vào phiên, hãy bấm Bật camera");
 }
 
 async function connectPhoneToLaptop() {
@@ -135,6 +156,7 @@ refs.startBtn.addEventListener("click", async () => {
 
     refs.startBtn.disabled = false;
   } catch (error) {
+    console.error("start camera error:", error);
     refs.startBtn.disabled = false;
     setMobileStatus(`Không bật được camera: ${error.message}`);
   }
@@ -154,6 +176,7 @@ refs.switchBtn.addEventListener("click", async () => {
       setMobileStatus("Đã đổi camera");
     }
   } catch (error) {
+    console.error("switch camera error:", error);
     setMobileStatus(`Không đổi được camera: ${error.message}`);
   }
 });
