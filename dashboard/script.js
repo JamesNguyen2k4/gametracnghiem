@@ -27,7 +27,9 @@ async function handleLogout() {
     // sau này dùng:
     // window.location.href = "../list_play/tamquoc/dashboard_tamquoc/index.html";
   }
-  
+  function goToCallVolunteer() {
+    window.location.href = "../callvolunteer/dashboard_volunteer/index.html";
+  }
 
   
   async function loadUserInfo(user) {
@@ -80,7 +82,10 @@ async function handleLogout() {
     const keocoBtn = document.getElementById("keocoBtn");
     const tamquocBtn = document.getElementById("tamquocBtn");
     const gradingBtn = document.getElementById("gradingBtn");
-
+    const callVolunteerBtn = document.getElementById("callVolunteerBtn");
+    if (callVolunteerBtn) {
+      callVolunteerBtn.addEventListener("click", goToCallVolunteer);
+    }
     if (gradingBtn) {
       gradingBtn.addEventListener("click", () => {
         window.location.href = "../submit/dashboard_submit/index.html";

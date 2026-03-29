@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kết nối camera điện thoại</title>
+  <link rel="icon" type="image/png" href="../../image/logo.ico" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="mobile-page">
+    <div class="mobile-card">
+      <h1>Kết nối camera điện thoại</h1>
+      <p class="mobile-desc">Bật camera trên điện thoại để truyền hình ảnh sang máy tính</p>
+
+      <div class="session-box">
+        <span class="session-label">Mã phiên</span>
+        <div id="mobileSessionText" class="session-code">----</div>
+      </div>
+
+      <video id="mobilePreview" class="mobile-preview" autoplay playsinline muted></video>
+
+      <div class="mobile-actions">
+        <button id="startPhoneCameraBtn" class="btn btn-primary">Bật camera</button>
+        <button id="switchCameraBtn" class="btn btn-secondary">Đổi trước / sau</button>
+      </div>
+
+      <p id="mobileStatus" class="mobile-status">Sẵn sàng kết nối</p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../shared/supabase.js"></script>
+  <script type="module" src="./script.js"></script>
+</body>
+</html>

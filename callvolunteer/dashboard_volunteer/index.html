@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gọi Xung Phong - Camera</title>
+  <link rel="icon" type="image/png" href="../../image/logo.ico" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="app-wrapper">
+    <header class="app-header">
+        <div class="header-left">
+          <div class="logo-icon">📸</div>
+          <div>
+            <h1>Gọi Xung Phong - Camera</h1>
+            <p class="header-subtitle">Chụp ảnh lớp và chọn ngẫu nhiên một người</p>
+          </div>
+        </div>
+      
+        <div class="header-actions">
+          <button id="backDashboardBtn" class="btn btn-ghost" type="button">
+            ← Về dashboard
+          </button>
+        </div>
+      </header>
+
+    <main class="main-layout">
+      <section class="camera-panel panel">
+        <div class="camera-source-box">
+          <button id="useLocalCameraBtn" class="btn btn-ghost">Webcam máy tính</button>
+          <button id="usePhoneCameraBtn" class="btn btn-primary">Camera điện thoại</button>
+        </div>
+
+        <div id="phoneConnectPanel" class="phone-connect-panel hidden">
+            <div class="phone-title">Kết nối camera điện thoại</div>
+            <div class="phone-desc">Mở điện thoại bằng link hoặc quét QR bên dưới</div>
+          
+            <div id="sessionCodeText" class="session-code">----</div>
+          
+            <div class="phone-action-row">
+              <button id="copySessionBtn" class="btn btn-ghost" type="button">Copy mã</button>
+              <button id="copySessionLinkBtn" class="btn btn-ghost" type="button">Copy link</button>
+            </div>
+          
+            <div id="sessionLinkText" class="session-link"></div>
+          
+            <div class="qr-box">
+              <img id="sessionQrImage" class="qr-image hidden" alt="QR kết nối điện thoại" />
+            </div>
+          
+            <div id="phoneConnectStatus" class="phone-status">Đang chờ điện thoại kết nối...</div>
+          </div>
+
+        <div class="camera-view-area" id="cameraView">
+          <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
+
+          <div class="camera-placeholder" id="cameraPlaceholder">
+            <div class="placeholder-icon">📷</div>
+            <span>Bấm “Mở camera” để bắt đầu</span>
+          </div>
+
+          <canvas id="capturedCanvas" class="captured-canvas"></canvas>
+          <canvas id="detectionCanvas" class="detection-canvas"></canvas>
+          <div class="flash-effect" id="flashEffect"></div>
+        </div>
+
+        <div class="cam-status">
+          <div class="dot" id="statusDot"></div>
+          <span id="statusText">Camera chưa mở</span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnOpen">Mở camera</button>
+          <button class="btn btn-capture" id="btnCapture" disabled>Chụp ảnh</button>
+          <button class="btn btn-ghost" id="btnRetake" disabled>Chụp lại</button>
+          <button class="btn btn-random" id="btnRandom" disabled>Random xung phong</button>
+          <button class="btn btn-danger" id="btnStop" disabled>Dừng camera</button>
+        </div>
+      </section>
+
+      <aside class="info-panel">
+        <section class="panel card">
+          <div class="card-title">Trạng thái hệ thống</div>
+          <div class="status-grid">
+            <div class="stat-box">
+              <div class="stat-val" id="statPeople">0</div>
+              <div class="stat-label">Người phát hiện</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val" id="statCaptures">0</div>
+              <div class="stat-label">Lần chụp</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel card">
+          <div class="card-title">Danh sách người phát hiện</div>
+          <div class="people-list" id="peopleList">
+            <div class="empty-state">
+              Chưa phát hiện khuôn mặt nào.<br />
+              Hãy chụp ảnh để bắt đầu.
+            </div>
+          </div>
+        </section>
+
+        <section class="panel card result-card">
+          <div class="result-label">Người được chọn</div>
+          <div class="result-name" id="resultName">—</div>
+          <div class="result-note" id="resultNote">Sẵn sàng random</div>
+        </section>
+
+        <section class="panel card">
+          <div class="card-title">Nhật ký hoạt động</div>
+          <div class="log-area" id="logArea">
+            <div class="log-entry">
+              <span class="log-time">[--:--]</span> Hệ thống sẵn sàng
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="face-popup-overlay hidden" id="facePopupOverlay">
+    <div class="face-popup">
+      <button class="face-popup-close" id="facePopupClose" type="button">✕</button>
+      <div class="face-popup-label">Người được chọn</div>
+      <div class="face-popup-name" id="facePopupName">Khuôn mặt 1</div>
+      <div class="face-popup-image-wrap">
+        <canvas id="facePopupCanvas" class="face-popup-canvas"></canvas>
+      </div>
+      <div class="face-popup-note">Kết quả được cắt từ ảnh vừa chụp</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../shared/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229/face_detection.js"></script>
+  <script type="module" src="./scipt.js"></script>
+</body>
+</html>
