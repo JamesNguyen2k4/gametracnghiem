@@ -171,7 +171,7 @@
   }
   
   .camera-video {
-    object-fit: cover;
+    object-fit: contain;
     opacity: 0;
     z-index: 1;
     transition: opacity 0.25s ease;

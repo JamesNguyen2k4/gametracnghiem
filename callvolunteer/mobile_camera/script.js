@@ -50,8 +50,10 @@ async function startPhoneCamera() {
 
   const stream = await navigator.mediaDevices.getUserMedia({
     video: {
-      facingMode: state.facingMode
-    },
+      facingMode: state.facingMode,
+      width: { ideal: 1920, max: 1920 },
+      height: { ideal: 1080, max: 1080 }
+    }
     audio: false
   });
 
@@ -78,6 +80,25 @@ async function ensurePeerConnection() {
         payload: { candidate }
       });
     }
+    pc.ontrack = (event) => {
+      const [stream] = event.streams;
+    
+      if (stream) {
+        // 🔥 Tăng bitrate video
+        stream.getVideoTracks().forEach(track => {
+          const sender = pc.getSenders().find(s => s.track === track);
+          if (!sender) return;
+    
+          const params = sender.getParameters();
+          if (!params.encodings) params.encodings = [{}];
+    
+          params.encodings[0].maxBitrate = 2500000; // 2.5 Mbps
+          sender.setParameters(params);
+        });
+    
+        onRemoteStream?.(stream);
+      }
+    };
   });
 
   if (state.stream) {
