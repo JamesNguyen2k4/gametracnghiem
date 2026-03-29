@@ -34,6 +34,28 @@ function getSessionId() {
   return (params.get("session") || "").trim().toUpperCase();
 }
 
+async function boostSenderBitrate(pc) {
+  if (!pc) return;
+
+  const senders = pc.getSenders().filter((sender) => sender.track && sender.track.kind === "video");
+
+  for (const sender of senders) {
+    try {
+      const params = sender.getParameters();
+      if (!params.encodings || !params.encodings.length) {
+        params.encodings = [{}];
+      }
+
+      params.encodings[0].maxBitrate = 2500000;
+      params.encodings[0].maxFramerate = 30;
+
+      await sender.setParameters(params);
+    } catch (error) {
+      console.warn("boostSenderBitrate error:", error);
+    }
+  }
+}
+
 async function startPhoneCamera() {
   if (!window.isSecureContext) {
     throw new Error("Trang này chưa chạy trong HTTPS hoặc secure context.");
@@ -52,14 +74,20 @@ async function startPhoneCamera() {
     video: {
       facingMode: state.facingMode,
       width: { ideal: 1920, max: 1920 },
-      height: { ideal: 1080, max: 1080 }
-    }
+      height: { ideal: 1080, max: 1080 },
+      frameRate: { ideal: 30, max: 30 }
+    },
     audio: false
   });
 
   state.stream = stream;
   refs.preview.srcObject = stream;
   await refs.preview.play();
+
+  const track = stream.getVideoTracks()[0];
+  if (track) {
+    console.log("camera settings:", track.getSettings());
+  }
 
   setMobileStatus("Camera đã bật");
 }
@@ -80,29 +108,11 @@ async function ensurePeerConnection() {
         payload: { candidate }
       });
     }
-    pc.ontrack = (event) => {
-      const [stream] = event.streams;
-    
-      if (stream) {
-        // 🔥 Tăng bitrate video
-        stream.getVideoTracks().forEach(track => {
-          const sender = pc.getSenders().find(s => s.track === track);
-          if (!sender) return;
-    
-          const params = sender.getParameters();
-          if (!params.encodings) params.encodings = [{}];
-    
-          params.encodings[0].maxBitrate = 2500000; // 2.5 Mbps
-          sender.setParameters(params);
-        });
-    
-        onRemoteStream?.(stream);
-      }
-    };
   });
 
   if (state.stream) {
     await addLocalStream(state.peer, state.stream);
+    await boostSenderBitrate(state.peer);
   }
 }
 
