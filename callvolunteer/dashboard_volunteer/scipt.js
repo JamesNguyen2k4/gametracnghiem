@@ -44,6 +44,7 @@ import {
     sessionId: "",
     signaling: null,
     peer: null,
+    remoteRotation: 0,
     phoneConnected: false
   };
   

@@ -13,7 +13,8 @@ const refs = {
   sessionText: document.getElementById("mobileSessionText"),
   startBtn: document.getElementById("startPhoneCameraBtn"),
   switchBtn: document.getElementById("switchCameraBtn"),
-  status: document.getElementById("mobileStatus")
+  status: document.getElementById("mobileStatus"),
+  rotateBtn: document.getElementById("rotatePhoneBtn")
 };
 
 const state = {
@@ -21,6 +22,7 @@ const state = {
   signaling: null,
   peer: null,
   stream: null,
+  manualRotation: 0,
   facingMode: "environment"
 };
 
@@ -34,15 +36,7 @@ function getSessionId() {
   return (params.get("session") || "").trim().toUpperCase();
 }
 function getRotationDegrees() {
-  const angle =
-    window.screen?.orientation?.angle ??
-    window.orientation ??
-    0;
-
-  if (angle === 90 || angle === -270) return 90;
-  if (angle === -90 || angle === 270) return 270;
-  if (angle === 180 || angle === -180) return 180;
-  return 0;
+  return state.manualRotation;
 }
 async function sendOrientationUpdate() {
   if (!state.signaling) return;
@@ -160,7 +154,11 @@ async function handlePhoneSignal(message) {
     setMobileStatus(`Lỗi signaling: ${error.message}`);
   }
 }
-
+refs.rotateBtn?.addEventListener("click", async () => {
+  state.manualRotation = (state.manualRotation + 90) % 360;
+  setMobileStatus(`Góc xoay hiện tại: ${state.manualRotation}°`);
+  await sendOrientationUpdate();
+});
 async function initPhoneConnection() {
   state.sessionId = getSessionId();
   refs.sessionText.textContent = state.sessionId || "----";
