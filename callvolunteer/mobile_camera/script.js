@@ -66,7 +66,7 @@ async function boostSenderBitrate(pc) {
         params.encodings = [{}];
       }
 
-      params.encodings[0].maxBitrate = 4000000;
+      params.encodings[0].maxBitrate = 2500000;
       params.encodings[0].scaleResolutionDownBy = 1.0;
       params.encodings[0].maxFramerate = 30;
 
