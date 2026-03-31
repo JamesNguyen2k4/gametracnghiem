@@ -320,45 +320,6 @@ import {
     }
   }
   
-  async function handleCapture() {
-    if (!state.cameraOn) return;
-  
-    try {
-      clearCurrentDetection();
-      flashCapture(refs.flashEffect);
-  
-      captureFrame(refs.video, refs.capturedCanvas);
-      syncCanvasSize(refs.capturedCanvas, refs.detectionCanvas);
-  
-      refs.capturedCanvas.classList.add("active");
-  
-      state.captured = true;
-      state.captureCount += 1;
-  
-      setStatus(refs, "Đang nhận diện khuôn mặt...", "captured");
-      logMessage(refs.logArea, "Đã chụp ảnh");
-  
-      const faces = await detectFaces(refs.capturedCanvas);
-  
-      state.faces = faces.map((face, index) => ({
-        ...face,
-        label: `Khuôn mặt ${index + 1}`
-      }));
-  
-      if (state.faces.length > 0) {
-        setStatus(refs, `Phát hiện ${state.faces.length} khuôn mặt`, "captured");
-        logMessage(refs.logArea, `Phát hiện ${state.faces.length} khuôn mặt`);
-      } else {
-        setStatus(refs, "Không phát hiện khuôn mặt nào", "captured");
-        logMessage(refs.logArea, "Không phát hiện khuôn mặt nào");
-      }
-  
-      renderAll();
-    } catch (error) {
-      setStatus(refs, "Nhận diện thất bại", "captured");
-      logMessage(refs.logArea, `Nhận diện thất bại: ${error.message}`);
-    }
-  }
   
   function handleRetake() {
     state.captured = false;
@@ -429,23 +390,73 @@ import {
     renderAll();
   }
   
-  async function bootstrap() {
+  async function handleCapture() {
+    if (!state.cameraOn) return;
+  
     try {
+      console.log("[capture] 1. start handleCapture");
+  
+      setStatus(refs, "Đang khởi tạo detector...", "captured");
+      logMessage(refs.logArea, "Bắt đầu chụp ảnh");
+  
+      console.log("[capture] 2. before initFaceDetector");
       await initFaceDetector();
-      logMessage(refs.logArea, "Đã nạp bộ nhận diện khuôn mặt");
+      console.log("[capture] 3. after initFaceDetector");
+  
+      clearCurrentDetection();
+      flashCapture(refs.flashEffect);
+  
+      console.log("[capture] 4. before captureFrame");
+      captureFrame(refs.video, refs.capturedCanvas);
+      console.log("[capture] 5. after captureFrame");
+  
+      syncCanvasSize(refs.capturedCanvas, refs.detectionCanvas);
+      refs.capturedCanvas.classList.add("active");
+  
+      state.captured = true;
+      state.captureCount += 1;
+  
+      setStatus(refs, "Đang nhận diện khuôn mặt...", "captured");
+      logMessage(refs.logArea, "Đã chụp ảnh, bắt đầu detect");
+  
+      console.log("[capture] 6. before detectFaces");
+      const faces = await detectFaces(refs.capturedCanvas);
+      console.log("[capture] 7. after detectFaces", faces);
+  
+      state.faces = faces.map((face, index) => ({
+        ...face,
+        label: `Khuôn mặt ${index + 1}`
+      }));
+  
+      if (state.faces.length > 0) {
+        setStatus(refs, `Phát hiện ${state.faces.length} khuôn mặt`, "captured");
+        logMessage(refs.logArea, `Phát hiện ${state.faces.length} khuôn mặt`);
+      } else {
+        setStatus(refs, "Không phát hiện khuôn mặt nào", "captured");
+        logMessage(refs.logArea, "Không phát hiện khuôn mặt nào");
+      }
+  
+      renderAll();
     } catch (error) {
-      logMessage(refs.logArea, `Không nạp được MediaPipe: ${error.message}`);
+      console.error("[capture] error:", error);
+      setStatus(refs, "Nhận diện thất bại", "captured");
+      logMessage(refs.logArea, `Nhận diện thất bại: ${error.message}`);
     }
+  }
+  async function bootstrap() {
+    logMessage(refs.logArea, "Hệ thống sẵn sàng");
+  
     refs.copySessionBtn?.addEventListener("click", async () => {
-        if (!state.sessionId) return;
-        await copyToClipboard(state.sessionId, `Đã copy mã phiên: ${state.sessionId}`);
-      });
-    
-      refs.copySessionLinkBtn?.addEventListener("click", async () => {
-        if (!state.sessionId) return;
-        const joinUrl = getPhoneJoinUrl(state.sessionId);
-        await copyToClipboard(joinUrl, "Đã copy link kết nối điện thoại");
-      });
+      if (!state.sessionId) return;
+      await copyToClipboard(state.sessionId, `Đã copy mã phiên: ${state.sessionId}`);
+    });
+  
+    refs.copySessionLinkBtn?.addEventListener("click", async () => {
+      if (!state.sessionId) return;
+      const joinUrl = getPhoneJoinUrl(state.sessionId);
+      await copyToClipboard(joinUrl, "Đã copy link kết nối điện thoại");
+    });
+  
     refs.useLocalCameraBtn.addEventListener("click", switchToLocalMode);
     refs.usePhoneCameraBtn.addEventListener("click", switchToPhoneMode);
   
@@ -454,7 +465,9 @@ import {
     refs.btnRetake.addEventListener("click", handleRetake);
     refs.btnStop.addEventListener("click", handleStopCamera);
     refs.btnRandom.addEventListener("click", handleRandomPick);
+  
     refs.backDashboardBtn?.addEventListener("click", goBackDashboard);
+  
     refs.facePopupClose.addEventListener("click", () => closeFacePopup(refs));
     refs.facePopupOverlay.addEventListener("click", (event) => {
       if (event.target === refs.facePopupOverlay) {
@@ -464,7 +477,6 @@ import {
   
     renderAll();
   }
-  
   window.addEventListener("beforeunload", async () => {
     try {
       await cleanupLocalStream();
@@ -472,4 +484,4 @@ import {
     } catch (_) {}
   });
   
-  bootstrap();
+  window.addEventListener("DOMContentLoaded", bootstrap);

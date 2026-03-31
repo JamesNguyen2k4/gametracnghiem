@@ -136,7 +136,14 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../../shared/supabase.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229/face_detection.js"></script>
+  <script src="https://docs.opencv.org/4.x/opencv.js"></script>
   <script type="module" src="./scipt.js"></script>
+  <script>
+    console.log("[html] window.cv =", window.cv);
+    setTimeout(() => {
+      console.log("[html after 2s] window.cv =", window.cv);
+      console.log("[html after 2s] window.cv?.Mat =", typeof window.cv?.Mat);
+    }, 2000);
+  </script>
 </body>
 </html>
