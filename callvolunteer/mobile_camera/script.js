@@ -33,7 +33,33 @@ function getSessionId() {
   const params = new URLSearchParams(window.location.search);
   return (params.get("session") || "").trim().toUpperCase();
 }
+function getRotationDegrees() {
+  const angle =
+    window.screen?.orientation?.angle ??
+    window.orientation ??
+    0;
 
+  if (angle === 90 || angle === -270) return 90;
+  if (angle === -90 || angle === 270) return 270;
+  if (angle === 180 || angle === -180) return 180;
+  return 0;
+}
+async function sendOrientationUpdate() {
+  if (!state.signaling) return;
+
+  const rotation = getRotationDegrees();
+
+  try {
+    await state.signaling.send({
+      type: "orientation",
+      from: "phone",
+      payload: { rotation }
+    });
+    console.log("[mobile] sent orientation:", rotation);
+  } catch (error) {
+    console.warn("[mobile] send orientation failed:", error);
+  }
+}
 async function boostSenderBitrate(pc) {
   if (!pc) return;
 
@@ -174,6 +200,8 @@ async function connectPhoneToLaptop() {
     payload: { sdp: offer }
   });
 
+  await sendOrientationUpdate();
+
   setMobileStatus("Đã gửi yêu cầu kết nối tới máy tính");
 }
 
@@ -203,7 +231,9 @@ refs.switchBtn.addEventListener("click", async () => {
 
     if (state.peer) {
       await connectPhoneToLaptop();
+      await sendOrientationUpdate();
     } else {
+      await sendOrientationUpdate();
       setMobileStatus("Đã đổi camera");
     }
   } catch (error) {
@@ -225,5 +255,11 @@ window.addEventListener("beforeunload", async () => {
     }
   } catch (_) {}
 });
+window.addEventListener("orientationchange", () => {
+  sendOrientationUpdate();
+});
 
+window.screen?.orientation?.addEventListener?.("change", () => {
+  sendOrientationUpdate();
+});
 initPhoneConnection();

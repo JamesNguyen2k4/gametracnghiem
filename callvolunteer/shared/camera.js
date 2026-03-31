@@ -24,7 +24,12 @@ export async function startCamera(videoEl) {
     videoEl.srcObject = null;
   }
   
-  export function captureFrame(videoEl, canvasEl) {
+  export function captureFrame(videoEl, canvasEl, options = {}) {
+    const {
+      rotation = 0,
+      mirror = false
+    } = options;
+  
     const videoWidth = videoEl.videoWidth || videoEl.clientWidth;
     const videoHeight = videoEl.videoHeight || videoEl.clientHeight;
   
@@ -32,15 +37,42 @@ export async function startCamera(videoEl) {
       throw new Error("Không lấy được khung hình từ camera.");
     }
   
-    canvasEl.width = videoWidth;
-    canvasEl.height = videoHeight;
+    const normalizedRotation = ((rotation % 360) + 360) % 360;
+    const swapSides = normalizedRotation === 90 || normalizedRotation === 270;
+  
+    canvasEl.width = swapSides ? videoHeight : videoWidth;
+    canvasEl.height = swapSides ? videoWidth : videoHeight;
   
     const ctx = canvasEl.getContext("2d");
-    ctx.clearRect(0, 0, videoWidth, videoHeight);
+    ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+  
+    ctx.save();
+  
+    // Xoay canvas trước
+    if (normalizedRotation === 90) {
+      ctx.translate(canvasEl.width, 0);
+      ctx.rotate(Math.PI / 2);
+    } else if (normalizedRotation === 180) {
+      ctx.translate(canvasEl.width, canvasEl.height);
+      ctx.rotate(Math.PI);
+    } else if (normalizedRotation === 270) {
+      ctx.translate(0, canvasEl.height);
+      ctx.rotate(-Math.PI / 2);
+    }
+  
+    // Mirror nếu cần
+    if (mirror) {
+      ctx.translate(videoWidth, 0);
+      ctx.scale(-1, 1);
+    }
+  
     ctx.drawImage(videoEl, 0, 0, videoWidth, videoHeight);
+    ctx.restore();
   
     return {
-      width: videoWidth,
-      height: videoHeight
+      width: canvasEl.width,
+      height: canvasEl.height
     };
   }

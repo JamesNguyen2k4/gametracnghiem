@@ -227,6 +227,13 @@ import {
   
       if (message.type === "candidate") {
         await addIceCandidate(state.peer, message.payload.candidate);
+        return;
+      }
+  
+      if (message.type === "orientation") {
+        state.remoteRotation = Number(message.payload?.rotation || 0);
+        logMessage(refs.logArea, `Điện thoại xoay: ${state.remoteRotation}°`);
+        return;
       }
     } catch (error) {
       refs.phoneConnectStatus.textContent = `Lỗi kết nối: ${error.message}`;
@@ -407,7 +414,10 @@ import {
       flashCapture(refs.flashEffect);
   
       console.log("[capture] 4. before captureFrame");
-      captureFrame(refs.video, refs.capturedCanvas);
+      captureFrame(refs.video, refs.capturedCanvas, {
+        rotation: state.cameraMode === "phone" ? state.remoteRotation : 0,
+        mirror: false
+      });
       console.log("[capture] 5. after captureFrame");
   
       syncCanvasSize(refs.capturedCanvas, refs.detectionCanvas);

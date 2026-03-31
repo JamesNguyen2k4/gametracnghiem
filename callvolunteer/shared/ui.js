@@ -117,9 +117,12 @@ export function setStatus(refs, text, mode = "idle") {
     const { x, y, width, height } = face.box;
   
     // Padding lớn hơn để lấy cả đầu + vai
-    const paddingX = width * 1.2;
-    const paddingTop = height * 1.1;
-    const paddingBottom = height * 0.9;
+    const faceArea = width * height;
+    const smallFace = faceArea < 9000;
+
+    const paddingX = smallFace ? width * 0.6 : width * 1.0;
+    const paddingTop = smallFace ? height * 0.6 : height * 1.0;
+    const paddingBottom = smallFace ? height * 0.5 : height * 0.8;
   
     let sx = Math.max(0, x - paddingX);
     let sy = Math.max(0, y - paddingTop);
