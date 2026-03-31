@@ -116,30 +116,52 @@ export function setStatus(refs, text, mode = "idle") {
   export function cropFaceToCanvas(sourceCanvas, face, targetCanvas) {
     const { x, y, width, height } = face.box;
   
-    const paddingX = width * 0.35;
-    const paddingTop = height * 0.35;
-    const paddingBottom = height * 0.2;
+    // Padding lớn hơn để lấy cả đầu + vai
+    const paddingX = width * 1.2;
+    const paddingTop = height * 1.1;
+    const paddingBottom = height * 0.9;
   
     let sx = Math.max(0, x - paddingX);
     let sy = Math.max(0, y - paddingTop);
     let sw = Math.min(sourceCanvas.width - sx, width + paddingX * 2);
     let sh = Math.min(sourceCanvas.height - sy, height + paddingTop + paddingBottom);
   
-    targetCanvas.width = Math.round(sw);
-    targetCanvas.height = Math.round(sh);
+    // Cố định kích thước popup canvas
+    const targetWidth = 420;
+    const targetHeight = 260;
+  
+    targetCanvas.width = targetWidth;
+    targetCanvas.height = targetHeight;
   
     const ctx = targetCanvas.getContext("2d");
-    ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+    ctx.clearRect(0, 0, targetWidth, targetHeight);
+  
+    // nền tối cho đẹp
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, targetWidth, targetHeight);
+  
+    // scale để ảnh crop luôn to nhất có thể trong popup
+    const scale = Math.min(targetWidth / sw, targetHeight / sh);
+  
+    const drawWidth = sw * scale;
+    const drawHeight = sh * scale;
+  
+    const dx = (targetWidth - drawWidth) / 2;
+    const dy = (targetHeight - drawHeight) / 2;
+  
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+  
     ctx.drawImage(
       sourceCanvas,
       sx,
       sy,
       sw,
       sh,
-      0,
-      0,
-      targetCanvas.width,
-      targetCanvas.height
+      dx,
+      dy,
+      drawWidth,
+      drawHeight
     );
   }
   
