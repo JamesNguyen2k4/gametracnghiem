@@ -236,6 +236,10 @@ import {
         logMessage(refs.logArea, `Điện thoại xoay: ${state.remoteRotation}°`);
         return;
       }
+      if (message.type === "capture") {
+        await handleCapture();
+        return;
+      }
     } catch (error) {
       refs.phoneConnectStatus.textContent = `Lỗi kết nối: ${error.message}`;
       logMessage(refs.logArea, `Lỗi signaling: ${error.message}`);

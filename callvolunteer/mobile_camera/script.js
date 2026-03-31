@@ -14,6 +14,7 @@ const refs = {
   startBtn: document.getElementById("startPhoneCameraBtn"),
   switchBtn: document.getElementById("switchCameraBtn"),
   status: document.getElementById("mobileStatus"),
+  captureBtn: document.getElementById("capturePhoneBtn"),
   rotateBtn: document.getElementById("rotatePhoneBtn")
 };
 
@@ -30,7 +31,24 @@ function setMobileStatus(text) {
   refs.status.textContent = text;
   console.log("[mobile status]", text);
 }
+async function sendCaptureCommand() {
+  if (!state.signaling) return;
 
+  try {
+    await state.signaling.send({
+      type: "capture",
+      from: "phone"
+    });
+    console.log("[mobile] sent capture command");
+    setMobileStatus("Đã gửi lệnh chụp tới máy tính");
+  } catch (error) {
+    console.warn("[mobile] send capture failed:", error);
+    setMobileStatus(`Gửi lệnh chụp thất bại: ${error.message}`);
+  }
+}
+refs.captureBtn?.addEventListener("click", async () => {
+  await sendCaptureCommand();
+});
 function getSessionId() {
   const params = new URLSearchParams(window.location.search);
   return (params.get("session") || "").trim().toUpperCase();
