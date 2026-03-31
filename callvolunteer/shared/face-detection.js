@@ -190,7 +190,7 @@ export async function detectFaces(sourceCanvasEl) {
 
     resized = new cv.Mat();
 
-    const maxWidth = 640;
+    const maxWidth = 960;
     if (src.cols > maxWidth) {
       const newHeight = Math.round((src.rows * maxWidth) / src.cols);
       cv.resize(src, resized, new cv.Size(maxWidth, newHeight));

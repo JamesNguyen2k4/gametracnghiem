@@ -66,7 +66,8 @@ async function boostSenderBitrate(pc) {
         params.encodings = [{}];
       }
 
-      params.encodings[0].maxBitrate = 2500000;
+      params.encodings[0].maxBitrate = 4000000;
+      params.encodings[0].scaleResolutionDownBy = 1.0;
       params.encodings[0].maxFramerate = 30;
 
       await sender.setParameters(params);
@@ -107,6 +108,7 @@ async function startPhoneCamera() {
   const track = stream.getVideoTracks()[0];
   if (track) {
     console.log("camera settings:", track.getSettings());
+    track.contentHint = "detail";
   }
 
   setMobileStatus("Camera đã bật");
