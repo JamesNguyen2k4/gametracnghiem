@@ -69,7 +69,9 @@ async function handleLogout() {
       quizCountEl.textContent = "0";
     }
   }
-  
+  function goToQuizTrivia() {
+    window.location.href = "../list_play/quiz_tracnghiem/index.html";
+  }
   document.addEventListener("DOMContentLoaded", async () => {
     const user = await requireAuthOrRedirect();
     if (!user) return;
@@ -83,6 +85,11 @@ async function handleLogout() {
     const tamquocBtn = document.getElementById("tamquocBtn");
     const gradingBtn = document.getElementById("gradingBtn");
     const callVolunteerBtn = document.getElementById("callVolunteerBtn");
+    const quizTriviaBtn = document.getElementById("quizTriviaBtn");
+
+    if (quizTriviaBtn) {
+      quizTriviaBtn.addEventListener("click", goToQuizTrivia);
+    }
     if (callVolunteerBtn) {
       callVolunteerBtn.addEventListener("click", goToCallVolunteer);
     }

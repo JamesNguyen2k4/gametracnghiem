@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Trắc Nghiệm - EduGame</title>
+    <link rel="icon" type="image/png" href="../../image/logo.ico" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="quiz-page">
+      <header class="topbar">
+        <button id="backDashboardBtn" type="button" class="topbar-btn">
+          ← Về Dashboard
+        </button>
+
+        <div class="topbar-title-wrap">
+          <h1 class="page-title">Quiz trắc nghiệm</h1>
+          <p class="page-subtitle">Chọn bộ câu hỏi và bắt đầu làm bài</p>
+        </div>
+      </header>
+
+      <main class="quiz-layout">
+        <!-- Cột trái -->
+        <section class="quiz-sidebar card">
+          <div class="section-head">
+            <h2>Thiết lập</h2>
+            <p>Chọn bộ câu hỏi từ database</p>
+          </div>
+
+          <label for="quizSelect" class="field-label">Bộ câu hỏi</label>
+          <select id="quizSelect" class="field-control">
+            <option>Đang tải...</option>
+          </select>
+
+          <button id="loadQuizBtn" type="button" class="btn btn-secondary">
+            Tải bộ câu hỏi
+          </button>
+
+          <button id="startQuizBtn" type="button" class="btn btn-primary" disabled>
+            ▶ Bắt đầu
+          </button>
+
+          <div class="stats-box">
+            <div class="stat-item">
+              <span class="stat-label">Tổng câu</span>
+              <span id="totalQuestionText" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Điểm</span>
+              <span id="scoreText" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Tiến độ</span>
+              <span id="progressText" class="stat-value">0 / 0</span>
+            </div>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-bar">
+              <div id="progressBarFill" class="progress-bar-fill"></div>
+            </div>
+          </div>
+
+          <p id="messageText" class="message-text"></p>
+        </section>
+
+        <!-- Cột phải -->
+        <section class="quiz-main card">
+          <div id="emptyState" class="empty-state">
+            <div class="empty-emoji">📚</div>
+            <h3>Chưa có bộ câu hỏi</h3>
+            <p>Hãy chọn và tải bộ câu hỏi để bắt đầu chơi</p>
+          </div>
+
+          <div id="quizScreen" class="quiz-screen hidden">
+            <div class="question-meta">
+              <span id="questionIndexText">Câu 1</span>
+            </div>
+
+            <h2 id="questionText" class="question-text">Nội dung câu hỏi</h2>
+
+            <div id="optionsContainer" class="options-grid"></div>
+
+            <div id="feedbackBox" class="feedback-box hidden">
+              <p id="feedbackText"></p>
+            </div>
+
+            <div class="quiz-actions">
+              <button id="nextBtn" type="button" class="btn btn-primary hidden">
+                Câu tiếp theo →
+              </button>
+              <button id="restartBtn" type="button" class="btn btn-ghost hidden">
+                Làm lại
+              </button>
+            </div>
+          </div>
+
+          <div id="resultScreen" class="result-screen hidden">
+            <div class="result-emoji" id="resultEmoji">🎉</div>
+            <h2>Kết quả</h2>
+            <p id="resultScore" class="result-score">0 / 0</p>
+            <p id="resultMessage" class="result-message"></p>
+
+            <button id="playAgainBtn" type="button" class="btn btn-primary">
+              🔄 Chơi lại
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <audio id="correctSound" preload="auto" src="./quiz_sound/dung.mp3"></audio>
+    <audio id="wrongSound" preload="auto" src="./quiz_sound/sai.mp3"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../../shared/supabase.js"></script>
+    <script src="../../shared/auth-guard.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
