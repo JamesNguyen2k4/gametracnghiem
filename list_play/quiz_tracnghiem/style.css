@@ -304,17 +304,25 @@ body {
 }
 
 .option-btn.correct {
-  border-color: #22c55e !important;
-  background: #dcfce7 !important;
-  color: #166534 !important;
+  border: 3px solid #16a34a !important;
+  background: linear-gradient(135deg, #bbf7d0, #86efac) !important;
+  color: #065f46 !important;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.25);
+  transform: scale(1.02);
 }
 
 .option-btn.wrong {
-  border-color: #ef4444 !important;
-  background: #fee2e2 !important;
-  color: #991b1b !important;
+  border: 3px solid #dc2626 !important;
+  background: linear-gradient(135deg, #fecaca, #fca5a5) !important;
+  color: #7f1d1d !important;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.25);
 }
-
+.option-btn.dimmed {
+  opacity: 0.4;
+  transform: scale(0.98);
+}
 .feedback-box {
   margin-top: 18px;
   padding: 14px 16px;
