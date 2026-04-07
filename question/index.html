@@ -5,68 +5,286 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="../image/logo.ico" />
   <title>Quản trị câu hỏi - EduGame</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="page">
+    <!-- HERO -->
     <header class="hero">
-      <h1>Quản trị câu hỏi</h1>
-      <p>Nhập nội dung TXT, chuẩn hóa thành JSON và lưu vào thư mục <b>question/</b>.</p>
-    </header>
-    <div class="top-actions">
-        <button id="backDashboardBtn" type="button" class="back-btn">
-          ← Về Dashboard
-        </button>
-      </div>
-    <main class="layout">
-      <section class="card">
-        <h2>2. Thông tin bộ câu hỏi</h2>
-        <label>Tên bộ câu hỏi</label>
-        <input id="quizTitle" type="text" placeholder="Ví dụ: bo-cau-hoi-lop-10a1" />
-
-        <label>Mô tả</label>
-        <input id="quizDescription" type="text" placeholder="Ví dụ: Bộ câu hỏi kiểm tra nhanh lớp 10A1" />
-      </section>
-
-      <section class="card full">
-        <h2>3. Dán nội dung TXT</h2>
-        <textarea id="rawInput" rows="18" placeholder="Ví dụ định dạng câu hỏi:
-            Thủ đô của Việt Nam là gì?
-            *Hà Nội
-            TP.HCM
-            Đà Nẵng
-            Huế
-
-            1 + 1 = ?
-            1
-            *2
-            3
-            4
-
-            Hành tinh nào gần Mặt trời nhất?
-            Trái Đất
-            Sao Kim
-            *Sao Thủy
-            Sao Hỏa
-
-            Lưu ý:
-            - Mỗi câu gồm 1 dòng câu hỏi + 4 dòng đáp án
-            - Đáp án đúng phải có dấu * ở đầu
-            - Các câu cách nhau bằng 1 dòng trống
-            "></textarea>
-
-        <div class="actions">
-          <button id="parseBtn">Chuẩn hóa</button>
-          <button id="saveBtn">Lưu thành JSON mới</button>
+      <div class="hero-top">
+        <div>
+          <h1>Quản trị câu hỏi</h1>
+          <p>
+            Tạo, chỉnh sửa và quản lý các bộ câu hỏi trên hệ thống. Bạn có thể nhập nhanh
+            từ TXT hoặc sửa thủ công từng câu hỏi đã tạo.
+          </p>
         </div>
 
-        <p id="message" class="message"></p>
-      </section>
+        <div class="hero-actions">
+          <button id="createNewQuizBtn" type="button" class="primary-btn">
+            + Tạo bộ mới
+          </button>
+          <button id="backDashboardBtn" type="button" class="back-btn">
+            ← Về Dashboard
+          </button>
+        </div>
+      </div>
+    </header>
 
+    <!-- MAIN LAYOUT -->
+    <main class="manager-layout">
+      <!-- SIDEBAR -->
+      <aside class="card quiz-sidebar">
+        <h2>Bộ câu hỏi đã tạo</h2>
+
+        <input
+          id="quizSearchInput"
+          class="search-input"
+          type="text"
+          placeholder="Tìm bộ câu hỏi..."
+        />
+
+        <div id="quizList" class="quiz-list">
+          <div class="empty-state">
+            <strong>Chưa có bộ câu hỏi</strong>
+            Hãy tạo bộ câu hỏi mới để bắt đầu quản lý.
+          </div>
+        </div>
+      </aside>
+
+      <!-- CONTENT -->
+      <section class="content-area">
+        <!-- QUIZ META -->
+        <section class="card quiz-meta-card">
+          <h2>Thông tin bộ câu hỏi</h2>
+
+          <label for="quizTitle">Tên bộ câu hỏi</label>
+          <input
+            id="quizTitle"
+            type="text"
+            placeholder="Ví dụ: bo-cau-hoi-lop-10a1"
+          />
+
+          <label for="quizDescription">Mô tả</label>
+          <input
+            id="quizDescription"
+            type="text"
+            placeholder="Ví dụ: Bộ câu hỏi kiểm tra nhanh lớp 10A1"
+          />
+
+          <div class="actions">
+            <button id="saveQuizMetaBtn" type="button">Lưu thông tin</button>
+            <button id="deleteQuizBtn" type="button" class="danger-btn">
+              Xóa bộ câu hỏi
+            </button>
+          </div>
+        </section>
+
+        <!-- QUESTION LIST -->
+        <section class="card question-list-card">
+          <div class="section-head-row">
+            <h2>Danh sách câu hỏi</h2>
+            <button id="addQuestionBtn" type="button" class="primary-btn">
+              + Thêm câu hỏi
+            </button>
+          </div>
+
+          <div id="questionList" class="question-list">
+            <div class="empty-state">
+              <strong>Chưa có câu hỏi nào</strong>
+              Chọn một bộ câu hỏi hoặc nhập nhanh từ TXT để tạo dữ liệu.
+            </div>
+          </div>
     </main>
+  </div>
+
+  <!-- MODAL THÊM / SỬA CÂU HỎI -->
+  <div id="questionModalOverlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="questionModalTitle">Thêm câu hỏi</h3>
+        <button id="closeQuestionModalBtn" type="button" class="modal-close">
+          ✕
+        </button>
+      </div>
+
+      <div class="modal-grid">
+        <div class="full">
+          <label for="modalQuestionText">Nội dung câu hỏi</label>
+          <textarea
+            id="modalQuestionText"
+            rows="4"
+            placeholder="Nhập nội dung câu hỏi..."
+          ></textarea>
+        </div>
+
+        <div>
+          <label for="modalOptionA">Đáp án A</label>
+          <input id="modalOptionA" type="text" placeholder="Nhập đáp án A" />
+        </div>
+
+        <div>
+          <label for="modalOptionB">Đáp án B</label>
+          <input id="modalOptionB" type="text" placeholder="Nhập đáp án B" />
+        </div>
+
+        <div>
+          <label for="modalOptionC">Đáp án C</label>
+          <input id="modalOptionC" type="text" placeholder="Nhập đáp án C" />
+        </div>
+
+        <div>
+          <label for="modalOptionD">Đáp án D</label>
+          <input id="modalOptionD" type="text" placeholder="Nhập đáp án D" />
+        </div>
+
+        <div class="full">
+          <label for="modalCorrectAnswer">Đáp án đúng</label>
+          <select id="modalCorrectAnswer" class="correct-answer-select">
+            <option value="0">A</option>
+            <option value="1">B</option>
+            <option value="2">C</option>
+            <option value="3">D</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelQuestionModalBtn" type="button" class="back-btn">
+          Hủy
+        </button>
+        <button id="saveQuestionBtn" type="button" class="primary-btn">
+          Lưu câu hỏi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL XÁC NHẬN XÓA QUIZ -->
+  <div id="deleteQuizModalOverlay" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 560px;">
+      <div class="modal-head">
+        <h3>Xóa bộ câu hỏi</h3>
+        <button id="closeDeleteQuizModalBtn" type="button" class="modal-close">
+          ✕
+        </button>
+      </div>
+
+      <p style="margin: 0; color: #4b5563; font-size: 17px; line-height: 1.6;">
+        Bạn có chắc muốn xóa bộ câu hỏi này không? Toàn bộ câu hỏi thuộc bộ này cũng
+        sẽ bị xóa và không thể khôi phục.
+      </p>
+
+      <div class="modal-actions">
+        <button id="cancelDeleteQuizBtn" type="button" class="back-btn">
+          Hủy
+        </button>
+        <button id="confirmDeleteQuizBtn" type="button" class="danger-btn">
+          Xóa bộ câu hỏi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL XÁC NHẬN XÓA CÂU HỎI -->
+  <div id="deleteQuestionModalOverlay" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 520px;">
+      <div class="modal-head">
+        <h3>Xóa câu hỏi</h3>
+        <button id="closeDeleteQuestionModalBtn" type="button" class="modal-close">
+          ✕
+        </button>
+      </div>
+
+      <p style="margin: 0; color: #4b5563; font-size: 17px; line-height: 1.6;">
+        Bạn có chắc muốn xóa câu hỏi này không? Hành động này không thể khôi phục.
+      </p>
+
+      <div class="modal-actions">
+        <button id="cancelDeleteQuestionBtn" type="button" class="back-btn">
+          Hủy
+        </button>
+        <button id="confirmDeleteQuestionBtn" type="button" class="danger-btn">
+          Xóa câu hỏi
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL TẠO BỘ CÂU HỎI MỚI -->
+  <div id="createQuizModalOverlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Tạo bộ câu hỏi mới</h3>
+        <button id="closeCreateQuizModalBtn" type="button" class="modal-close">
+          ✕
+        </button>
+      </div>
+
+      <div class="modal-grid">
+        <div class="full">
+          <label for="createQuizTitle">Tên bộ câu hỏi</label>
+          <input
+            id="createQuizTitle"
+            type="text"
+            placeholder="Ví dụ: Bài 22 tin 12 luyện tập"
+          />
+        </div>
+
+        <div class="full">
+          <label for="createQuizDescription">Mô tả</label>
+          <input
+            id="createQuizDescription"
+            type="text"
+            placeholder="Ví dụ: Bộ câu hỏi kiểm tra nhanh lớp 10A1"
+          />
+        </div>
+
+        <div class="full">
+          <label for="createQuizRawInput">Dán nội dung TXT</label>
+          <textarea
+            id="createQuizRawInput"
+            rows="14"
+            placeholder="Ví dụ định dạng câu hỏi:
+Thủ đô của Việt Nam là gì?
+*Hà Nội
+TP.HCM
+Đà Nẵng
+Huế
+
+1 + 1 = ?
+1
+*2
+3
+4
+
+Hành tinh nào gần Mặt trời nhất?
+Trái Đất
+Sao Kim
+*Sao Thủy
+Sao Hỏa"
+          ></textarea>
+        </div>
+      </div>
+
+      <p id="createQuizMessage" class="message"></p>
+
+      <div class="modal-actions">
+        <button id="parseCreateQuizBtn" type="button" class="back-btn">
+          Chuẩn hóa
+        </button>
+        <button id="saveCreateQuizBtn" type="button" class="primary-btn">
+          Lưu bộ câu hỏi
+        </button>
+      </div>
+    </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../shared/supabase.js"></script>
